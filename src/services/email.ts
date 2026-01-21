@@ -1,7 +1,7 @@
 import { format } from 'date-fns';
-import { Meeting, ReminderType, User, TemplateType, EmailTemplate } from '../types';
+import { Meeting, ReminderType, User, TemplateType, EmailTemplate, EmailActivityType } from '../types';
 import { sendEmail, sendEmailAsUser, SendEmailResult } from './gmail';
-import { createEmailThread, getEmailTemplate, getUserById } from '../db/repositories';
+import { createEmailThread, getEmailTemplate, getUserById, createEmailActivity } from '../db/repositories';
 
 const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
 
@@ -296,6 +296,18 @@ function getTemplateTypeForReminder(reminderType: ReminderType): TemplateType {
   return 'confirmation_request';
 }
 
+// Convert reminder type to activity type
+function getActivityTypeForReminder(reminderType: ReminderType): EmailActivityType {
+  const mapping: Record<ReminderType, EmailActivityType> = {
+    '48_hours': 'reminder_48h',
+    '24_hours': 'reminder_24h',
+    '6_hours': 'reminder_6h',
+    '1_hour': 'reminder_1h',
+    '30_minutes': 'reminder_30m',
+  };
+  return mapping[reminderType];
+}
+
 // ============ Email Sending Functions ============
 
 export async function sendReminderEmail(
@@ -322,32 +334,56 @@ export async function sendReminderEmail(
 
   // Send using user's account if available, otherwise use default
   let result: SendEmailResult;
-  if (user && user.gmailRefreshToken) {
-    result = await sendEmailAsUser(user, {
-      to: meeting.clientEmail,
-      subject,
-      htmlBody,
-      textBody,
+  try {
+    if (user && user.gmailRefreshToken) {
+      result = await sendEmailAsUser(user, {
+        to: meeting.clientEmail,
+        subject,
+        htmlBody,
+        textBody,
+      });
+    } else {
+      result = await sendEmail({
+        to: meeting.clientEmail,
+        subject,
+        htmlBody,
+        textBody,
+      });
+    }
+
+    // Track the email thread for reply detection
+    await createEmailThread({
+      meetingId: meeting.id,
+      gmailThreadId: result.threadId,
+      gmailMessageId: result.messageId,
     });
-  } else {
-    result = await sendEmail({
-      to: meeting.clientEmail,
+
+    // Log activity
+    await createEmailActivity({
+      meetingId: meeting.id,
+      activityType: getActivityTypeForReminder(reminderType),
+      recipientEmail: meeting.clientEmail,
       subject,
-      htmlBody,
-      textBody,
+      gmailMessageId: result.messageId,
+      gmailThreadId: result.threadId,
+      status: 'sent',
     });
+
+    console.log(`Sent ${reminderType} reminder email to ${meeting.clientEmail}${user ? ` (from ${user.name})` : ''}`);
+
+    return result;
+  } catch (error) {
+    // Log failed activity
+    await createEmailActivity({
+      meetingId: meeting.id,
+      activityType: getActivityTypeForReminder(reminderType),
+      recipientEmail: meeting.clientEmail,
+      subject,
+      status: 'failed',
+      errorMessage: error instanceof Error ? error.message : 'Unknown error',
+    });
+    throw error;
   }
-
-  // Track the email thread for reply detection
-  await createEmailThread({
-    meetingId: meeting.id,
-    gmailThreadId: result.threadId,
-    gmailMessageId: result.messageId,
-  });
-
-  console.log(`Sent ${reminderType} reminder email to ${meeting.clientEmail}${user ? ` (from ${user.name})` : ''}`);
-
-  return result;
 }
 
 export async function sendCancellationEmail(meeting: Meeting): Promise<void> {
@@ -368,23 +404,48 @@ export async function sendCancellationEmail(meeting: Meeting): Promise<void> {
   const htmlBody = replaceTemplateVariables(template.htmlBody, vars);
   const textBody = replaceTemplateVariables(template.textBody, vars);
 
-  if (user && user.gmailRefreshToken) {
-    await sendEmailAsUser(user, {
-      to: meeting.clientEmail,
-      subject,
-      htmlBody,
-      textBody,
-    });
-  } else {
-    await sendEmail({
-      to: meeting.clientEmail,
-      subject,
-      htmlBody,
-      textBody,
-    });
-  }
+  try {
+    let result: SendEmailResult;
+    if (user && user.gmailRefreshToken) {
+      result = await sendEmailAsUser(user, {
+        to: meeting.clientEmail,
+        subject,
+        htmlBody,
+        textBody,
+      });
+    } else {
+      result = await sendEmail({
+        to: meeting.clientEmail,
+        subject,
+        htmlBody,
+        textBody,
+      });
+    }
 
-  console.log(`Sent cancellation email to ${meeting.clientEmail}${user ? ` (from ${user.name})` : ''}`);
+    // Log activity
+    await createEmailActivity({
+      meetingId: meeting.id,
+      activityType: 'cancellation',
+      recipientEmail: meeting.clientEmail,
+      subject,
+      gmailMessageId: result.messageId,
+      gmailThreadId: result.threadId,
+      status: 'sent',
+    });
+
+    console.log(`Sent cancellation email to ${meeting.clientEmail}${user ? ` (from ${user.name})` : ''}`);
+  } catch (error) {
+    // Log failed activity
+    await createEmailActivity({
+      meetingId: meeting.id,
+      activityType: 'cancellation',
+      recipientEmail: meeting.clientEmail,
+      subject,
+      status: 'failed',
+      errorMessage: error instanceof Error ? error.message : 'Unknown error',
+    });
+    throw error;
+  }
 }
 
 export async function sendConfirmationAcknowledgement(meeting: Meeting): Promise<void> {
@@ -405,21 +466,46 @@ export async function sendConfirmationAcknowledgement(meeting: Meeting): Promise
   const htmlBody = replaceTemplateVariables(template.htmlBody, vars);
   const textBody = replaceTemplateVariables(template.textBody, vars);
 
-  if (user && user.gmailRefreshToken) {
-    await sendEmailAsUser(user, {
-      to: meeting.clientEmail,
-      subject,
-      htmlBody,
-      textBody,
-    });
-  } else {
-    await sendEmail({
-      to: meeting.clientEmail,
-      subject,
-      htmlBody,
-      textBody,
-    });
-  }
+  try {
+    let result: SendEmailResult;
+    if (user && user.gmailRefreshToken) {
+      result = await sendEmailAsUser(user, {
+        to: meeting.clientEmail,
+        subject,
+        htmlBody,
+        textBody,
+      });
+    } else {
+      result = await sendEmail({
+        to: meeting.clientEmail,
+        subject,
+        htmlBody,
+        textBody,
+      });
+    }
 
-  console.log(`Sent confirmation acknowledgement to ${meeting.clientEmail}${user ? ` (from ${user.name})` : ''}`);
+    // Log activity
+    await createEmailActivity({
+      meetingId: meeting.id,
+      activityType: 'confirmation_ack',
+      recipientEmail: meeting.clientEmail,
+      subject,
+      gmailMessageId: result.messageId,
+      gmailThreadId: result.threadId,
+      status: 'sent',
+    });
+
+    console.log(`Sent confirmation acknowledgement to ${meeting.clientEmail}${user ? ` (from ${user.name})` : ''}`);
+  } catch (error) {
+    // Log failed activity
+    await createEmailActivity({
+      meetingId: meeting.id,
+      activityType: 'confirmation_ack',
+      recipientEmail: meeting.clientEmail,
+      subject,
+      status: 'failed',
+      errorMessage: error instanceof Error ? error.message : 'Unknown error',
+    });
+    throw error;
+  }
 }

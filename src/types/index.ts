@@ -82,3 +82,27 @@ export const REMINDER_TYPES: ReminderType[] = [
   '1_hour',
   '30_minutes',
 ];
+
+export type EmailActivityType =
+  | 'reminder_48h'
+  | 'reminder_24h'
+  | 'reminder_6h'
+  | 'reminder_1h'
+  | 'reminder_30m'
+  | 'confirmation_ack'
+  | 'cancellation';
+
+export type EmailActivityStatus = 'sent' | 'failed';
+
+export interface EmailActivity {
+  id: string;
+  meetingId: string;
+  activityType: EmailActivityType;
+  recipientEmail: string;
+  subject: string;
+  gmailMessageId: string | null;
+  gmailThreadId: string | null;
+  status: EmailActivityStatus;
+  errorMessage: string | null;
+  createdAt: Date;
+}

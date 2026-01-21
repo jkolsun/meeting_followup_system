@@ -6,6 +6,8 @@ import {
   getUpcomingMeetings,
   getUnconfirmedMeetings,
   cancelMeeting,
+  getRecentEmailActivityWithMeetings,
+  getEmailActivityByMeetingId,
 } from '../db/repositories';
 import { scheduleRemindersForMeeting, cancelRemindersForMeeting } from '../jobs/queue';
 
@@ -169,6 +171,37 @@ router.post('/meetings/:id/confirm', async (req: Request, res: Response) => {
   } catch (error) {
     console.error('Error confirming meeting:', error);
     return res.status(500).json({ error: 'Failed to confirm meeting' });
+  }
+});
+
+// Get email activity log
+router.get('/activity', async (req: Request, res: Response) => {
+  try {
+    const limit = parseInt(req.query.limit as string) || 50;
+    const activity = await getRecentEmailActivityWithMeetings(limit);
+
+    return res.json({ activity });
+  } catch (error) {
+    console.error('Error fetching activity:', error);
+    return res.status(500).json({ error: 'Failed to fetch activity' });
+  }
+});
+
+// Get email activity for a specific meeting
+router.get('/meetings/:id/activity', async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const meeting = await getMeetingById(id);
+
+    if (!meeting) {
+      return res.status(404).json({ error: 'Meeting not found' });
+    }
+
+    const activity = await getEmailActivityByMeetingId(id);
+    return res.json({ activity });
+  } catch (error) {
+    console.error('Error fetching meeting activity:', error);
+    return res.status(500).json({ error: 'Failed to fetch meeting activity' });
   }
 });
 

@@ -108,6 +108,22 @@ async function initializePostgresTables(): Promise<void> {
       )
     `);
 
+    // Email activity log table
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS email_activity (
+        id TEXT PRIMARY KEY,
+        meeting_id TEXT NOT NULL REFERENCES meetings(id) ON DELETE CASCADE,
+        activity_type TEXT NOT NULL,
+        recipient_email TEXT NOT NULL,
+        subject TEXT NOT NULL,
+        gmail_message_id TEXT,
+        gmail_thread_id TEXT,
+        status TEXT NOT NULL DEFAULT 'sent',
+        error_message TEXT,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )
+    `);
+
     console.log('PostgreSQL tables initialized');
   } finally {
     client.release();

@@ -56,11 +56,20 @@
 
     .grid {
       display: grid;
-      grid-template-columns: 400px 1fr;
-      gap: 30px;
+      grid-template-columns: 350px 1fr 350px;
+      gap: 24px;
     }
 
-    @media (max-width: 900px) {
+    @media (max-width: 1200px) {
+      .grid {
+        grid-template-columns: 350px 1fr;
+      }
+      .activity-card {
+        grid-column: 1 / -1;
+      }
+    }
+
+    @media (max-width: 800px) {
       .grid {
         grid-template-columns: 1fr;
       }
@@ -338,6 +347,105 @@
       align-items: center;
       gap: 16px;
     }
+
+    /* Activity Log Styles */
+    .activity-list {
+      max-height: 500px;
+      overflow-y: auto;
+    }
+
+    .activity-item {
+      padding: 12px;
+      border-bottom: 1px solid #eee;
+      font-size: 13px;
+    }
+
+    .activity-item:last-child {
+      border-bottom: none;
+    }
+
+    .activity-item:hover {
+      background: #f9f9f9;
+    }
+
+    .activity-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+
+    .activity-type {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+    }
+
+    .activity-type.reminder {
+      background: #e3f2fd;
+      color: #1565c0;
+    }
+
+    .activity-type.confirmation {
+      background: #e8f5e9;
+      color: #2e7d32;
+    }
+
+    .activity-type.cancellation {
+      background: #ffebee;
+      color: #c62828;
+    }
+
+    .activity-type.failed {
+      background: #ffebee;
+      color: #c62828;
+    }
+
+    .activity-time {
+      color: #999;
+      font-size: 11px;
+    }
+
+    .activity-details {
+      color: #555;
+      margin-bottom: 4px;
+    }
+
+    .activity-meeting {
+      font-weight: 500;
+      color: #333;
+    }
+
+    .activity-recipient {
+      color: #888;
+    }
+
+    .activity-links {
+      display: flex;
+      gap: 8px;
+      margin-top: 6px;
+    }
+
+    .activity-links a {
+      font-size: 11px;
+      color: #667eea;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .activity-links a:hover {
+      text-decoration: underline;
+    }
+
+    .gmail-icon {
+      width: 14px;
+      height: 14px;
+    }
   </style>
 </head>
 <body>
@@ -446,6 +554,36 @@
           </div>
         </div>
       </div>
+
+      <!-- Email Activity Log -->
+      <div class="card activity-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <h2 style="margin-bottom: 0;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+              <polyline points="22,6 12,13 2,6"></polyline>
+            </svg>
+            Email Activity
+          </h2>
+          <button class="refresh-btn" onclick="loadActivity()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M23 4v6h-6"></path>
+              <path d="M1 20v-6h6"></path>
+              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+            </svg>
+          </button>
+        </div>
+
+        <div class="activity-list" id="activity-list">
+          <div class="empty-state" style="padding: 20px;">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity: 0.5;">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+              <polyline points="22,6 12,13 2,6"></polyline>
+            </svg>
+            <p style="margin-top: 12px;">No email activity yet</p>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -459,11 +597,14 @@
     let currentFilter = 'all';
     let currentUserFilter = '';
 
+    let allActivity = [];
+
     // Initialize
     document.addEventListener('DOMContentLoaded', () => {
       setMinDate();
       loadUsers();
       loadMeetings();
+      loadActivity();
       setupForm();
       setupFilters();
     });
@@ -730,8 +871,102 @@
       }, 3000);
     }
 
+    // Activity log functions
+    async function loadActivity() {
+      try {
+        const response = await fetch(`${API_BASE}/activity?limit=30`);
+        const data = await response.json();
+        allActivity = data.activity || [];
+        renderActivity();
+      } catch (error) {
+        console.error('Failed to load activity:', error);
+      }
+    }
+
+    function renderActivity() {
+      const list = document.getElementById('activity-list');
+
+      if (allActivity.length === 0) {
+        list.innerHTML = `
+          <div class="empty-state" style="padding: 20px;">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity: 0.5;">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+              <polyline points="22,6 12,13 2,6"></polyline>
+            </svg>
+            <p style="margin-top: 12px;">No email activity yet</p>
+          </div>
+        `;
+        return;
+      }
+
+      list.innerHTML = allActivity.map(activity => {
+        const typeInfo = getActivityTypeInfo(activity.activityType);
+        const statusClass = activity.status === 'failed' ? 'failed' : typeInfo.class;
+        const gmailLink = activity.gmailThreadId
+          ? `https://mail.google.com/mail/u/0/#inbox/${activity.gmailThreadId}`
+          : null;
+
+        return `
+          <div class="activity-item">
+            <div class="activity-header">
+              <span class="activity-type ${statusClass}">${activity.status === 'failed' ? 'Failed' : typeInfo.label}</span>
+              <span class="activity-time">${formatActivityTime(activity.createdAt)}</span>
+            </div>
+            <div class="activity-details">
+              <div class="activity-meeting">${escapeHtml(activity.meetingTitle)}</div>
+              <div class="activity-recipient">To: ${escapeHtml(activity.recipientEmail)}</div>
+            </div>
+            ${activity.status === 'failed' ? `<div style="color: #c62828; font-size: 11px;">Error: ${escapeHtml(activity.errorMessage || 'Unknown error')}</div>` : ''}
+            ${gmailLink ? `
+              <div class="activity-links">
+                <a href="${gmailLink}" target="_blank">
+                  <svg class="gmail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                    <polyline points="22,6 12,13 2,6"></polyline>
+                  </svg>
+                  View in Gmail
+                </a>
+              </div>
+            ` : ''}
+          </div>
+        `;
+      }).join('');
+    }
+
+    function getActivityTypeInfo(type) {
+      const types = {
+        'reminder_48h': { label: '48h Reminder', class: 'reminder' },
+        'reminder_24h': { label: '24h Reminder', class: 'reminder' },
+        'reminder_6h': { label: '6h Reminder', class: 'reminder' },
+        'reminder_1h': { label: '1h Reminder', class: 'reminder' },
+        'reminder_30m': { label: '30m Reminder', class: 'reminder' },
+        'confirmation_ack': { label: 'Confirmed', class: 'confirmation' },
+        'cancellation': { label: 'Cancelled', class: 'cancellation' },
+      };
+      return types[type] || { label: type, class: 'reminder' };
+    }
+
+    function formatActivityTime(dateStr) {
+      const date = new Date(dateStr);
+      const now = new Date();
+      const diffMs = now - date;
+      const diffMins = Math.floor(diffMs / 60000);
+      const diffHours = Math.floor(diffMs / 3600000);
+      const diffDays = Math.floor(diffMs / 86400000);
+
+      if (diffMins < 1) return 'Just now';
+      if (diffMins < 60) return `${diffMins}m ago`;
+      if (diffHours < 24) return `${diffHours}h ago`;
+      if (diffDays < 7) return `${diffDays}d ago`;
+
+      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    }
+
     // Auto-refresh every 30 seconds
-    setInterval(loadMeetings, 30000);
+    setInterval(() => {
+      loadMeetings();
+      loadActivity();
+    }, 30000);
   </script>
 </body>
 </html>

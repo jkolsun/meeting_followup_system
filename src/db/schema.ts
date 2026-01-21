@@ -111,6 +111,23 @@ async function initializeDatabase(): Promise<Database> {
     )
   `);
 
+  // Email activity log table
+  db.run(`
+    CREATE TABLE IF NOT EXISTS email_activity (
+      id TEXT PRIMARY KEY,
+      meeting_id TEXT NOT NULL,
+      activity_type TEXT NOT NULL,
+      recipient_email TEXT NOT NULL,
+      subject TEXT NOT NULL,
+      gmail_message_id TEXT,
+      gmail_thread_id TEXT,
+      status TEXT NOT NULL DEFAULT 'sent',
+      error_message TEXT,
+      created_at TEXT NOT NULL,
+      FOREIGN KEY (meeting_id) REFERENCES meetings(id) ON DELETE CASCADE
+    )
+  `);
+
   // Save to disk
   saveDatabase(db);
 

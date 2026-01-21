@@ -1,5 +1,5 @@
 import { queryAll, queryOne, execute, uuidv4 } from './database';
-import { Meeting, ReminderJob, ReminderType, MeetingWithReminders, User, EmailTemplate, TemplateType } from '../types';
+import { Meeting, ReminderJob, ReminderType, MeetingWithReminders, User, EmailTemplate, TemplateType, EmailActivity, EmailActivityType, EmailActivityStatus } from '../types';
 
 // ============ Meeting Repository ============
 
@@ -358,5 +358,80 @@ function mapRowToEmailTemplate(row: any): EmailTemplate {
     htmlBody: row.html_body,
     textBody: row.text_body,
     updatedAt: new Date(row.updated_at),
+  };
+}
+
+// ============ Email Activity Repository ============
+
+export async function createEmailActivity(data: {
+  meetingId: string;
+  activityType: EmailActivityType;
+  recipientEmail: string;
+  subject: string;
+  gmailMessageId?: string;
+  gmailThreadId?: string;
+  status: EmailActivityStatus;
+  errorMessage?: string;
+}): Promise<EmailActivity> {
+  const id = uuidv4();
+  const now = new Date().toISOString();
+
+  await execute(
+    `INSERT INTO email_activity (id, meeting_id, activity_type, recipient_email, subject, gmail_message_id, gmail_thread_id, status, error_message, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [id, data.meetingId, data.activityType, data.recipientEmail, data.subject, data.gmailMessageId || null, data.gmailThreadId || null, data.status, data.errorMessage || null, now]
+  );
+
+  return (await getEmailActivityById(id))!;
+}
+
+export async function getEmailActivityById(id: string): Promise<EmailActivity | null> {
+  const row = await queryOne('SELECT * FROM email_activity WHERE id = ?', [id]);
+  return row ? mapRowToEmailActivity(row) : null;
+}
+
+export async function getEmailActivityByMeetingId(meetingId: string): Promise<EmailActivity[]> {
+  const rows = await queryAll('SELECT * FROM email_activity WHERE meeting_id = ? ORDER BY created_at DESC', [meetingId]);
+  return rows.map(mapRowToEmailActivity);
+}
+
+export async function getRecentEmailActivity(limit: number = 50): Promise<EmailActivity[]> {
+  const rows = await queryAll('SELECT * FROM email_activity ORDER BY created_at DESC LIMIT ?', [limit]);
+  return rows.map(mapRowToEmailActivity);
+}
+
+export interface EmailActivityWithMeeting extends EmailActivity {
+  clientName: string;
+  meetingTitle: string;
+}
+
+export async function getRecentEmailActivityWithMeetings(limit: number = 50): Promise<EmailActivityWithMeeting[]> {
+  const rows = await queryAll(
+    `SELECT ea.*, m.client_name, m.meeting_title
+     FROM email_activity ea
+     JOIN meetings m ON ea.meeting_id = m.id
+     ORDER BY ea.created_at DESC
+     LIMIT ?`,
+    [limit]
+  );
+  return rows.map(row => ({
+    ...mapRowToEmailActivity(row),
+    clientName: row.client_name,
+    meetingTitle: row.meeting_title,
+  }));
+}
+
+function mapRowToEmailActivity(row: any): EmailActivity {
+  return {
+    id: row.id,
+    meetingId: row.meeting_id,
+    activityType: row.activity_type as EmailActivityType,
+    recipientEmail: row.recipient_email,
+    subject: row.subject,
+    gmailMessageId: row.gmail_message_id || null,
+    gmailThreadId: row.gmail_thread_id || null,
+    status: row.status as EmailActivityStatus,
+    errorMessage: row.error_message || null,
+    createdAt: new Date(row.created_at),
   };
 }
