@@ -1,5 +1,7 @@
 import { google, gmail_v1 } from 'googleapis';
 import { OAuth2Client } from 'google-auth-library';
+import { getUserById } from '../db/repositories';
+import { User } from '../types';
 
 // Gmail OAuth2 configuration
 const CLIENT_ID = process.env.GMAIL_CLIENT_ID!;
@@ -7,6 +9,11 @@ const CLIENT_SECRET = process.env.GMAIL_CLIENT_SECRET!;
 const REDIRECT_URI = process.env.GMAIL_REDIRECT_URI!;
 const REFRESH_TOKEN = process.env.GMAIL_REFRESH_TOKEN!;
 
+// Cache for per-user OAuth clients and Gmail clients
+const userOAuthClients: Map<string, OAuth2Client> = new Map();
+const userGmailClients: Map<string, gmail_v1.Gmail> = new Map();
+
+// Legacy singleton clients (for backward compatibility)
 let oauth2Client: OAuth2Client | null = null;
 let gmailClient: gmail_v1.Gmail | null = null;
 
@@ -28,6 +35,64 @@ export function getGmailClient(): gmail_v1.Gmail {
     });
   }
   return gmailClient;
+}
+
+// Create OAuth2 client for a specific user
+export function getOAuth2ClientForUser(user: User): OAuth2Client | null {
+  if (!user.gmailRefreshToken) {
+    return null;
+  }
+
+  let client = userOAuthClients.get(user.id);
+  if (!client) {
+    client = new google.auth.OAuth2(CLIENT_ID, CLIENT_SECRET, REDIRECT_URI);
+    client.setCredentials({
+      refresh_token: user.gmailRefreshToken,
+    });
+    userOAuthClients.set(user.id, client);
+  }
+  return client;
+}
+
+// Get Gmail client for a specific user
+export function getGmailClientForUser(user: User): gmail_v1.Gmail | null {
+  if (!user.gmailRefreshToken) {
+    return null;
+  }
+
+  let client = userGmailClients.get(user.id);
+  if (!client) {
+    const oauth = getOAuth2ClientForUser(user);
+    if (!oauth) return null;
+
+    client = google.gmail({
+      version: 'v1',
+      auth: oauth,
+    });
+    userGmailClients.set(user.id, client);
+  }
+  return client;
+}
+
+// Clear cached clients for a user (call when their token changes)
+export function clearUserGmailCache(userId: string): void {
+  userOAuthClients.delete(userId);
+  userGmailClients.delete(userId);
+}
+
+// Generate auth URL for a specific user (state contains userId for callback)
+export function getAuthUrlForUser(userId: string): string {
+  const oauth2 = new google.auth.OAuth2(CLIENT_ID, CLIENT_SECRET, REDIRECT_URI);
+  return oauth2.generateAuthUrl({
+    access_type: 'offline',
+    scope: [
+      'https://www.googleapis.com/auth/gmail.send',
+      'https://www.googleapis.com/auth/gmail.readonly',
+      'https://www.googleapis.com/auth/gmail.modify',
+    ],
+    prompt: 'consent',
+    state: userId, // Pass userId in state to identify user on callback
+  });
 }
 
 // Generate authorization URL for initial setup
@@ -131,6 +196,44 @@ export async function sendEmail(options: {
   const raw = createRawEmail({
     to: options.to,
     from: fromEmail,
+    subject: options.subject,
+    htmlBody: options.htmlBody,
+    textBody: options.textBody,
+    inReplyTo: options.inReplyTo,
+    references: options.inReplyTo,
+  });
+
+  const response = await gmail.users.messages.send({
+    userId: 'me',
+    requestBody: {
+      raw,
+      threadId: options.threadId,
+    },
+  });
+
+  return {
+    messageId: response.data.id!,
+    threadId: response.data.threadId!,
+  };
+}
+
+// Send email using a specific user's Gmail account
+export async function sendEmailAsUser(user: User, options: {
+  to: string;
+  subject: string;
+  htmlBody: string;
+  textBody: string;
+  threadId?: string;
+  inReplyTo?: string;
+}): Promise<SendEmailResult> {
+  const gmail = getGmailClientForUser(user);
+  if (!gmail) {
+    throw new Error(`User ${user.name} does not have Gmail connected`);
+  }
+
+  const raw = createRawEmail({
+    to: options.to,
+    from: `${user.name} <${user.email}>`,
     subject: options.subject,
     htmlBody: options.htmlBody,
     textBody: options.textBody,

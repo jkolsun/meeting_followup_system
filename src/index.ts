@@ -1,17 +1,19 @@
 import 'dotenv/config';
 import express from 'express';
 import path from 'path';
-import { getDatabase, closeDatabase } from './db/schema';
+import { initializeDatabase, closeDatabase } from './db/database';
 import meetingsRouter from './routes/meetings';
 import confirmationRouter from './routes/confirmation';
 import webhookRouter from './routes/webhook';
+import usersRouter from './routes/users';
+import templatesRouter from './routes/templates';
 
 const PORT = parseInt(process.env.PORT || '3000', 10);
 
 async function main() {
   // Initialize database
   console.log('Initializing database...');
-  getDatabase();
+  await initializeDatabase();
 
   // Create Express app
   const app = express();
@@ -32,14 +34,17 @@ async function main() {
   app.use('/api', meetingsRouter);
   app.use('/api', confirmationRouter);
   app.use('/api', webhookRouter);
+  app.use('/api', usersRouter);
+  app.use('/api', templatesRouter);
 
   // Start server
   const server = app.listen(PORT, () => {
-    console.log(`🚀 Meeting Follow-up System running on http://localhost:${PORT}`);
+    console.log(`Meeting Follow-up System running on http://localhost:${PORT}`);
     console.log('');
-    console.log('📊 Admin Dashboard: http://localhost:' + PORT);
+    console.log('Admin Dashboard: http://localhost:' + PORT);
+    console.log('Settings: http://localhost:' + PORT + '/settings.html');
     console.log('');
-    console.log('⚠️  Make sure to run the worker process separately: npm run worker');
+    console.log('Make sure to run the worker process separately: npm run worker');
   });
 
   // Graceful shutdown

@@ -10,7 +10,7 @@ router.get('/confirm/:token', async (req: Request, res: Response) => {
   const { token } = req.params;
 
   try {
-    const meeting = getMeetingByToken(token);
+    const meeting = await getMeetingByToken(token);
 
     if (!meeting) {
       return res.status(404).send(renderErrorPage('Meeting Not Found', 'This confirmation link is invalid or has expired.'));
@@ -28,7 +28,7 @@ router.get('/confirm/:token', async (req: Request, res: Response) => {
     }
 
     // Confirm the meeting
-    const confirmedMeeting = confirmMeeting(meeting.id);
+    const confirmedMeeting = await confirmMeeting(meeting.id);
 
     if (!confirmedMeeting) {
       return res.status(500).send(renderErrorPage('Error', 'Something went wrong. Please try again.'));

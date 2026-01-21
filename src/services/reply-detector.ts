@@ -1,6 +1,7 @@
 import { PubSub } from '@google-cloud/pubsub';
 import { getGmailClient, getThread } from './gmail';
-import { getMeetingByThreadId, confirmMeeting } from '../db/repositories';
+import { getMeetingByThreadId, getMeetingById, confirmMeeting } from '../db/repositories';
+import { queryAll } from '../db/database';
 import { cancelRemindersForMeeting } from '../jobs/queue';
 import { sendConfirmationAcknowledgement } from './email';
 
@@ -22,7 +23,7 @@ export async function startReplyDetection(): Promise<void> {
 
   subscription.on('message', async (message) => {
     try {
-      const data = JSON.parse(Buffer.from(message.data, 'base64').toString()) as GmailNotification;
+      const data = JSON.parse(Buffer.from(message.data as unknown as string, 'base64').toString()) as GmailNotification;
       console.log('Received Gmail notification:', data);
 
       await processGmailNotification(data);
@@ -61,7 +62,7 @@ async function processGmailNotification(notification: GmailNotification): Promis
       if (!message?.threadId) continue;
 
       // Check if this thread is associated with a meeting
-      const meeting = getMeetingByThreadId(message.threadId);
+      const meeting = await getMeetingByThreadId(message.threadId);
       if (!meeting) continue;
 
       // Skip if already confirmed or cancelled
@@ -83,7 +84,7 @@ async function processGmailNotification(notification: GmailNotification): Promis
         console.log(`Detected reply from client for meeting ${meeting.id}`);
 
         // Confirm the meeting
-        const confirmedMeeting = confirmMeeting(meeting.id);
+        const confirmedMeeting = await confirmMeeting(meeting.id);
         if (confirmedMeeting) {
           // Cancel pending reminders except 1-hour
           await cancelRemindersForMeeting(meeting.id);
@@ -103,13 +104,11 @@ export async function checkForReplies(meetingIds: string[]): Promise<void> {
   const gmail = getGmailClient();
 
   for (const meetingId of meetingIds) {
-    // Get threads associated with this meeting
-    const { getDatabase } = await import('../db/schema');
-    const db = getDatabase();
-
-    const threads = db.prepare(`
-      SELECT gmail_thread_id FROM email_threads WHERE meeting_id = ?
-    `).all(meetingId) as { gmail_thread_id: string }[];
+    // Get threads associated with this meeting using the database abstraction
+    const threads = await queryAll(
+      'SELECT gmail_thread_id FROM email_threads WHERE meeting_id = ?',
+      [meetingId]
+    ) as { gmail_thread_id: string }[];
 
     for (const { gmail_thread_id } of threads) {
       if (!gmail_thread_id) continue;
@@ -125,11 +124,11 @@ export async function checkForReplies(meetingIds: string[]): Promise<void> {
 
           if (fromHeader?.value && !fromHeader.value.includes(GMAIL_USER)) {
             // This is a reply from the client
-            const meeting = (await import('../db/repositories')).getMeetingById(meetingId);
+            const meeting = await getMeetingById(meetingId);
             if (meeting && !meeting.confirmedAt && !meeting.cancelledAt) {
               console.log(`Found reply for meeting ${meetingId}`);
 
-              const confirmedMeeting = confirmMeeting(meetingId);
+              const confirmedMeeting = await confirmMeeting(meetingId);
               if (confirmedMeeting) {
                 await cancelRemindersForMeeting(meetingId);
                 await sendConfirmationAcknowledgement(confirmedMeeting);

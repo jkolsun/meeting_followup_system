@@ -61,7 +61,7 @@ async function processGmailWebhook(historyId: string): Promise<void> {
         if (!message?.threadId || !message?.id) continue;
 
         // Check if this thread is associated with a meeting
-        const meeting = getMeetingByThreadId(message.threadId);
+        const meeting = await getMeetingByThreadId(message.threadId);
         if (!meeting) continue;
 
         // Skip if already confirmed or cancelled
@@ -82,7 +82,7 @@ async function processGmailWebhook(historyId: string): Promise<void> {
         if (fromHeader?.value && !fromHeader.value.includes(GMAIL_USER)) {
           console.log(`Client replied to meeting ${meeting.id}`);
 
-          const confirmedMeeting = confirmMeeting(meeting.id);
+          const confirmedMeeting = await confirmMeeting(meeting.id);
           if (confirmedMeeting) {
             await cancelRemindersForMeeting(meeting.id);
             await sendConfirmationAcknowledgement(confirmedMeeting);

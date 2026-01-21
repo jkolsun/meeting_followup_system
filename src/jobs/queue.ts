@@ -1,4 +1,4 @@
-import { Queue, Worker, Job } from 'bullmq';
+import { Queue, Worker, Job, ConnectionOptions } from 'bullmq';
 import { createRedisConnection } from '../config/redis';
 import { ReminderJobData, ReminderType, REMINDER_OFFSETS, REMINDER_TYPES } from '../types';
 import {
@@ -16,7 +16,7 @@ const QUEUE_NAME = 'meeting-reminders';
 
 // Create the queue
 export const reminderQueue = new Queue<ReminderJobData>(QUEUE_NAME, {
-  connection: createRedisConnection(),
+  connection: createRedisConnection() as unknown as ConnectionOptions,
   defaultJobOptions: {
     attempts: 3,
     backoff: {
@@ -30,7 +30,7 @@ export const reminderQueue = new Queue<ReminderJobData>(QUEUE_NAME, {
 
 // Schedule all reminders for a meeting
 export async function scheduleRemindersForMeeting(meetingId: string): Promise<void> {
-  const meeting = getMeetingById(meetingId);
+  const meeting = await getMeetingById(meetingId);
   if (!meeting) {
     throw new Error(`Meeting not found: ${meetingId}`);
   }
@@ -49,7 +49,7 @@ export async function scheduleRemindersForMeeting(meetingId: string): Promise<vo
     }
 
     // Create the reminder record
-    const reminder = createReminder({
+    const reminder = await createReminder({
       meetingId,
       reminderType,
       scheduledFor,
@@ -60,7 +60,7 @@ export async function scheduleRemindersForMeeting(meetingId: string): Promise<vo
 
     // Add job to the queue
     const job = await reminderQueue.add(
-      `reminder-${reminderType}`,
+      `reminder-${reminderType}` as any,
       {
         meetingId,
         reminderType,
@@ -73,7 +73,7 @@ export async function scheduleRemindersForMeeting(meetingId: string): Promise<vo
     );
 
     // Update the reminder with the job ID
-    updateReminderJobId(reminder.id, job.id!);
+    await updateReminderJobId(reminder.id, job.id!);
 
     console.log(`Scheduled ${reminderType} reminder for meeting ${meetingId} at ${scheduledFor.toISOString()}`);
   }
@@ -81,7 +81,7 @@ export async function scheduleRemindersForMeeting(meetingId: string): Promise<vo
 
 // Cancel all reminders except the 1-hour one
 export async function cancelRemindersForMeeting(meetingId: string): Promise<void> {
-  const reminders = getCancellableReminders(meetingId);
+  const reminders = await getCancellableReminders(meetingId);
 
   for (const reminder of reminders) {
     if (reminder.jobId) {
@@ -107,7 +107,7 @@ export function createReminderWorker(): Worker<ReminderJobData> {
 
       console.log(`Processing ${reminderType} reminder for meeting ${meetingId}`);
 
-      const meeting = getMeetingById(meetingId);
+      const meeting = await getMeetingById(meetingId);
       if (!meeting) {
         console.log(`Meeting ${meetingId} not found, skipping reminder`);
         return;
@@ -125,7 +125,7 @@ export function createReminderWorker(): Worker<ReminderJobData> {
         if (!meeting.confirmedAt) {
           console.log(`Meeting ${meetingId} not confirmed by 30 minutes before - cancelling`);
           await sendCancellationEmail(meeting);
-          cancelMeeting(meetingId);
+          await cancelMeeting(meetingId);
           return;
         }
       }
@@ -134,13 +134,13 @@ export function createReminderWorker(): Worker<ReminderJobData> {
       // For other reminders, only send if not already confirmed (they want confirmation)
       if (reminderType === '1_hour' || !meeting.confirmedAt) {
         await sendReminderEmail(meeting, reminderType);
-        markReminderSent(reminderId);
+        await markReminderSent(reminderId);
       } else {
         console.log(`Meeting ${meetingId} already confirmed, skipping ${reminderType} reminder`);
       }
     },
     {
-      connection: createRedisConnection(),
+      connection: createRedisConnection() as unknown as ConnectionOptions,
       concurrency: 5,
     }
   );

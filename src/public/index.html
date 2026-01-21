@@ -344,10 +344,13 @@
   <header>
     <div class="container">
       <h1>Meeting Follow-up System</h1>
-      <div class="stats">
-        <div class="stat" id="stat-total">Total: 0</div>
-        <div class="stat" id="stat-pending">Pending: 0</div>
-        <div class="stat" id="stat-confirmed">Confirmed: 0</div>
+      <div class="header-actions">
+        <div class="stats">
+          <div class="stat" id="stat-total">Total: 0</div>
+          <div class="stat" id="stat-pending">Pending: 0</div>
+          <div class="stat" id="stat-confirmed">Confirmed: 0</div>
+        </div>
+        <a href="/settings.html" style="background: rgba(255,255,255,0.2); padding: 8px 16px; border-radius: 20px; color: white; text-decoration: none; font-size: 14px;">Settings</a>
       </div>
     </div>
   </header>
@@ -386,6 +389,12 @@
             <label for="scheduledTime">Time</label>
             <input type="time" id="scheduledTime" name="scheduledTime" required>
           </div>
+          <div class="form-group">
+            <label for="assignedUser">Assigned To</label>
+            <select id="assignedUser" name="assignedUser" style="width: 100%; padding: 12px 14px; border: 1px solid #ddd; border-radius: 8px; font-size: 15px; background: white;">
+              <option value="">-- Select Team Member --</option>
+            </select>
+          </div>
           <button type="submit" class="btn btn-primary" id="submit-btn">
             <span class="btn-text">Schedule Meeting</span>
           </button>
@@ -419,6 +428,11 @@
           <button class="filter-tab" data-filter="pending">Pending</button>
           <button class="filter-tab" data-filter="confirmed">Confirmed</button>
         </div>
+        <div style="margin-bottom: 16px;">
+          <select id="userFilter" onchange="filterByUser()" style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+            <option value="">All Team Members</option>
+          </select>
+        </div>
 
         <div class="meeting-list" id="meeting-list">
           <div class="empty-state">
@@ -441,15 +455,62 @@
   <script>
     const API_BASE = '/api';
     let allMeetings = [];
+    let allUsers = [];
     let currentFilter = 'all';
+    let currentUserFilter = '';
 
     // Initialize
     document.addEventListener('DOMContentLoaded', () => {
       setMinDate();
+      loadUsers();
       loadMeetings();
       setupForm();
       setupFilters();
     });
+
+    async function loadUsers() {
+      try {
+        const response = await fetch(`${API_BASE}/users?active=true`);
+        const data = await response.json();
+        allUsers = data.users || [];
+        populateUserDropdown();
+      } catch (error) {
+        console.error('Failed to load users:', error);
+      }
+    }
+
+    function populateUserDropdown() {
+      const select = document.getElementById('assignedUser');
+      select.innerHTML = '<option value="">-- Select Team Member --</option>';
+
+      allUsers.forEach(user => {
+        const option = document.createElement('option');
+        option.value = user.id;
+        option.textContent = `${user.name}${user.hasGmailConnected ? '' : ' (Gmail not connected)'}`;
+        select.appendChild(option);
+      });
+
+      // Remember last selection
+      const lastUser = localStorage.getItem('lastAssignedUser');
+      if (lastUser && allUsers.some(u => u.id === lastUser)) {
+        select.value = lastUser;
+      }
+
+      // Also populate the filter dropdown
+      const filterSelect = document.getElementById('userFilter');
+      filterSelect.innerHTML = '<option value="">All Team Members</option>';
+      allUsers.forEach(user => {
+        const option = document.createElement('option');
+        option.value = user.id;
+        option.textContent = user.name;
+        filterSelect.appendChild(option);
+      });
+    }
+
+    function filterByUser() {
+      currentUserFilter = document.getElementById('userFilter').value;
+      renderMeetings();
+    }
 
     function setMinDate() {
       const today = new Date().toISOString().split('T')[0];
@@ -510,6 +571,11 @@
       // Filter out cancelled meetings from the list
       filtered = filtered.filter(m => !m.cancelledAt);
 
+      // Filter by assigned user
+      if (currentUserFilter) {
+        filtered = filtered.filter(m => m.assignedUserId === currentUserFilter);
+      }
+
       if (filtered.length === 0) {
         list.innerHTML = `
           <div class="empty-state">
@@ -529,6 +595,8 @@
         const date = new Date(meeting.scheduledAt);
         const status = meeting.confirmedAt ? 'confirmed' : 'pending';
         const statusLabel = meeting.confirmedAt ? 'Confirmed' : 'Awaiting Confirmation';
+        const assignedUser = allUsers.find(u => u.id === meeting.assignedUserId);
+        const assignedName = assignedUser ? assignedUser.name : 'Unassigned';
 
         return `
           <div class="meeting-item" data-id="${meeting.id}">
@@ -536,6 +604,7 @@
               <div class="meeting-title">${escapeHtml(meeting.meetingTitle)}</div>
               <div class="meeting-client">${escapeHtml(meeting.clientName)} &lt;${escapeHtml(meeting.clientEmail)}&gt;</div>
               <div class="meeting-time">${formatDate(date)}</div>
+              <div class="meeting-assigned" style="color: #667eea; font-size: 12px; margin-top: 4px;">Assigned to: ${escapeHtml(assignedName)}</div>
             </div>
             <div class="meeting-status">
               <span class="status-badge status-${status}">${statusLabel}</span>
@@ -561,13 +630,20 @@
       const date = document.getElementById('scheduledDate').value;
       const time = document.getElementById('scheduledTime').value;
       const scheduledAt = new Date(`${date}T${time}`).toISOString();
+      const assignedUserId = document.getElementById('assignedUser').value;
 
       const data = {
         clientName: document.getElementById('clientName').value,
         clientEmail: document.getElementById('clientEmail').value,
         meetingTitle: document.getElementById('meetingTitle').value,
-        scheduledAt
+        scheduledAt,
+        assignedUserId: assignedUserId || undefined
       };
+
+      // Remember user selection
+      if (assignedUserId) {
+        localStorage.setItem('lastAssignedUser', assignedUserId);
+      }
 
       try {
         const response = await fetch(`${API_BASE}/meetings`, {
@@ -584,6 +660,7 @@
         showToast('Meeting scheduled! Reminders will be sent automatically.', 'success');
         document.getElementById('meeting-form').reset();
         setMinDate();
+        populateUserDropdown(); // Restore user selection
         await loadMeetings();
       } catch (error) {
         showToast(error.message, 'error');

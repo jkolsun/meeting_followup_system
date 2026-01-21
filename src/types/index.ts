@@ -7,9 +7,38 @@ export interface Meeting {
   confirmedAt: Date | null;
   cancelledAt: Date | null;
   confirmationToken: string;
+  assignedUserId: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
+
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  gmailRefreshToken: string | null;
+  isActive: boolean;
+  createdAt: Date;
+}
+
+export type TemplateType = 'confirmation_request' | 'final_reminder' | 'acknowledgement' | 'cancellation';
+
+export interface EmailTemplate {
+  id: string;
+  userId: string;
+  templateType: TemplateType;
+  subject: string;
+  htmlBody: string;
+  textBody: string;
+  updatedAt: Date;
+}
+
+export const TEMPLATE_TYPES: TemplateType[] = [
+  'confirmation_request',
+  'final_reminder',
+  'acknowledgement',
+  'cancellation',
+];
 
 export interface ReminderJob {
   id: string;

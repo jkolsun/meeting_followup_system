@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { getDatabase, closeDatabase } from './db/schema';
+import { initializeDatabase, closeDatabase } from './db/database';
 import { createReminderWorker } from './jobs/queue';
 import { closeRedisConnection } from './config/redis';
 
@@ -7,7 +7,7 @@ async function main() {
   console.log('Starting Meeting Reminder Worker...');
 
   // Initialize database
-  getDatabase();
+  await initializeDatabase();
 
   // Create and start the worker
   const worker = createReminderWorker();

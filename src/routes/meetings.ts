@@ -14,7 +14,7 @@ const router = Router();
 // Create a new meeting and schedule reminders
 router.post('/meetings', async (req: Request, res: Response) => {
   try {
-    const { clientName, clientEmail, meetingTitle, scheduledAt } = req.body;
+    const { clientName, clientEmail, meetingTitle, scheduledAt, assignedUserId } = req.body;
 
     // Validate required fields
     if (!clientName || !clientEmail || !meetingTitle || !scheduledAt) {
@@ -36,11 +36,12 @@ router.post('/meetings', async (req: Request, res: Response) => {
     }
 
     // Create the meeting
-    const meeting = createMeeting({
+    const meeting = await createMeeting({
       clientName,
       clientEmail,
       meetingTitle,
       scheduledAt: scheduledDate,
+      assignedUserId: assignedUserId || undefined,
     });
 
     // Schedule all reminder jobs
@@ -57,6 +58,7 @@ router.post('/meetings', async (req: Request, res: Response) => {
         meetingTitle: meeting.meetingTitle,
         scheduledAt: meeting.scheduledAt.toISOString(),
         confirmationToken: meeting.confirmationToken,
+        assignedUserId: meeting.assignedUserId,
       },
     });
   } catch (error) {
@@ -69,7 +71,7 @@ router.post('/meetings', async (req: Request, res: Response) => {
 router.get('/meetings/:id', async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const meeting = getMeetingWithReminders(id);
+    const meeting = await getMeetingWithReminders(id);
 
     if (!meeting) {
       return res.status(404).json({ error: 'Meeting not found' });
@@ -89,9 +91,9 @@ router.get('/meetings', async (req: Request, res: Response) => {
 
     let meetings;
     if (status === 'unconfirmed') {
-      meetings = getUnconfirmedMeetings();
+      meetings = await getUnconfirmedMeetings();
     } else {
-      meetings = getUpcomingMeetings();
+      meetings = await getUpcomingMeetings();
     }
 
     return res.json({ meetings });
@@ -105,7 +107,7 @@ router.get('/meetings', async (req: Request, res: Response) => {
 router.post('/meetings/:id/cancel', async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const meeting = getMeetingById(id);
+    const meeting = await getMeetingById(id);
 
     if (!meeting) {
       return res.status(404).json({ error: 'Meeting not found' });
@@ -119,7 +121,7 @@ router.post('/meetings/:id/cancel', async (req: Request, res: Response) => {
     await cancelRemindersForMeeting(id);
 
     // Mark meeting as cancelled
-    const cancelledMeeting = cancelMeeting(id);
+    const cancelledMeeting = await cancelMeeting(id);
 
     console.log(`Meeting ${id} manually cancelled`);
 
@@ -137,7 +139,7 @@ router.post('/meetings/:id/cancel', async (req: Request, res: Response) => {
 router.post('/meetings/:id/confirm', async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const meeting = getMeetingById(id);
+    const meeting = await getMeetingById(id);
 
     if (!meeting) {
       return res.status(404).json({ error: 'Meeting not found' });
@@ -153,7 +155,7 @@ router.post('/meetings/:id/confirm', async (req: Request, res: Response) => {
 
     // Import and use confirmMeeting
     const { confirmMeeting: confirm } = await import('../db/repositories');
-    const confirmedMeeting = confirm(id);
+    const confirmedMeeting = await confirm(id);
 
     // Cancel pending reminders except 1-hour
     await cancelRemindersForMeeting(id);
