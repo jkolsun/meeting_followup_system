@@ -146,43 +146,6 @@ router.post('/meetings/:id/cancel', async (req: Request, res: Response) => {
   }
 });
 
-// Manually confirm a meeting (admin endpoint)
-router.post('/meetings/:id/confirm', async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-    const meeting = await getMeetingById(id);
-
-    if (!meeting) {
-      return res.status(404).json({ error: 'Meeting not found' });
-    }
-
-    if (meeting.cancelledAt) {
-      return res.status(400).json({ error: 'Cannot confirm a cancelled meeting' });
-    }
-
-    if (meeting.confirmedAt) {
-      return res.status(400).json({ error: 'Meeting already confirmed' });
-    }
-
-    // Import and use confirmMeeting
-    const { confirmMeeting: confirm } = await import('../db/repositories');
-    const confirmedMeeting = await confirm(id);
-
-    // Cancel pending reminders except 1-hour
-    await cancelRemindersForMeeting(id);
-
-    console.log(`Meeting ${id} manually confirmed`);
-
-    return res.json({
-      success: true,
-      meeting: confirmedMeeting,
-    });
-  } catch (error) {
-    console.error('Error confirming meeting:', error);
-    return res.status(500).json({ error: 'Failed to confirm meeting' });
-  }
-});
-
 // Get email activity log
 router.get('/activity', async (req: Request, res: Response) => {
   try {

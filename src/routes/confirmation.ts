@@ -64,7 +64,7 @@ function renderSuccessPage(title: string, message: string): string {
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: linear-gradient(135deg, #4A8B8B 0%, #3d7575 100%);
       min-height: 100vh;
       display: flex;
       align-items: center;
@@ -117,7 +117,7 @@ function renderErrorPage(title: string, message: string): string {
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: linear-gradient(135deg, #4A8B8B 0%, #3d7575 100%);
       min-height: 100vh;
       display: flex;
       align-items: center;

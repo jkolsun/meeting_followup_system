@@ -155,15 +155,6 @@
       font-size: 13px;
     }
 
-    .btn-confirm {
-      background: #28a745;
-      color: white;
-    }
-
-    .btn-confirm:hover {
-      background: #218838;
-    }
-
     .btn-cancel {
       background: #dc3545;
       color: white;
@@ -786,9 +777,7 @@
             <div class="meeting-actions">
               ${meeting.confirmedAt ? `
                 <a href="${generateGoogleCalendarUrl(meeting)}" target="_blank" class="btn btn-small btn-calendar">Add to Calendar</a>
-              ` : `
-                <button class="btn btn-small btn-confirm" onclick="confirmMeeting('${meeting.id}')">Confirm</button>
-              `}
+              ` : ''}
               <button class="btn btn-small btn-cancel" onclick="cancelMeeting('${meeting.id}')">Cancel</button>
             </div>
           </div>
@@ -844,23 +833,6 @@
       } finally {
         btn.disabled = false;
         btnText.textContent = 'Schedule Meeting';
-      }
-    }
-
-    async function confirmMeeting(id) {
-      if (!confirm('Mark this meeting as confirmed?')) return;
-
-      try {
-        const response = await fetch(`${API_BASE}/meetings/${id}/confirm`, {
-          method: 'POST'
-        });
-
-        if (!response.ok) throw new Error('Failed to confirm');
-
-        showToast('Meeting confirmed!', 'success');
-        await loadMeetings();
-      } catch (error) {
-        showToast('Failed to confirm meeting', 'error');
       }
     }
 
