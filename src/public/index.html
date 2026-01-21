@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Meeting Follow-up System | Bright Automations</title>
+  <link rel="icon" type="image/png" href="/logo.png">
   <style>
     * {
       margin: 0;
@@ -25,7 +26,7 @@
     }
 
     header {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: linear-gradient(135deg, #4A8B8B 0%, #3d7575 100%);
       color: white;
       padding: 20px 0;
       margin-bottom: 30px;
@@ -114,8 +115,8 @@
 
     .form-group input:focus {
       outline: none;
-      border-color: #667eea;
-      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      border-color: #4A8B8B;
+      box-shadow: 0 0 0 3px rgba(74, 139, 139, 0.1);
     }
 
     .btn {
@@ -133,14 +134,14 @@
     }
 
     .btn-primary {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: linear-gradient(135deg, #4A8B8B 0%, #3d7575 100%);
       color: white;
       width: 100%;
     }
 
     .btn-primary:hover {
       transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+      box-shadow: 0 4px 12px rgba(74, 139, 139, 0.4);
     }
 
     .btn-primary:disabled {
@@ -317,13 +318,13 @@
     }
 
     .filter-tab:hover {
-      border-color: #667eea;
+      border-color: #4A8B8B;
     }
 
     .filter-tab.active {
-      background: #667eea;
+      background: #4A8B8B;
       color: white;
-      border-color: #667eea;
+      border-color: #4A8B8B;
     }
 
     .refresh-btn {
@@ -431,7 +432,7 @@
 
     .activity-links a {
       font-size: 11px;
-      color: #667eea;
+      color: #4A8B8B;
       text-decoration: none;
       display: inline-flex;
       align-items: center;
@@ -446,12 +447,44 @@
       width: 14px;
       height: 14px;
     }
+
+    .btn-calendar {
+      background: #4285f4;
+      color: white;
+      font-size: 12px;
+      padding: 4px 10px;
+    }
+
+    .btn-calendar:hover {
+      background: #3367d6;
+    }
+
+    .header-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .header-logo img {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+    }
+
+    .meeting-assigned {
+      color: #4A8B8B;
+      font-size: 12px;
+      margin-top: 4px;
+    }
   </style>
 </head>
 <body>
   <header>
     <div class="container">
-      <h1>Meeting Follow-up System</h1>
+      <div class="header-logo">
+        <img src="/logo.png" alt="Bright Automations">
+        <h1>Meeting Follow-up System</h1>
+      </div>
       <div class="header-actions">
         <div class="stats">
           <div class="stat" id="stat-total">Total: 0</div>
@@ -745,15 +778,17 @@
               <div class="meeting-title">${escapeHtml(meeting.meetingTitle)}</div>
               <div class="meeting-client">${escapeHtml(meeting.clientName)} &lt;${escapeHtml(meeting.clientEmail)}&gt;</div>
               <div class="meeting-time">${formatDate(date)}</div>
-              <div class="meeting-assigned" style="color: #667eea; font-size: 12px; margin-top: 4px;">Assigned to: ${escapeHtml(assignedName)}</div>
+              <div class="meeting-assigned">Assigned to: ${escapeHtml(assignedName)}</div>
             </div>
             <div class="meeting-status">
               <span class="status-badge status-${status}">${statusLabel}</span>
             </div>
             <div class="meeting-actions">
-              ${!meeting.confirmedAt ? `
+              ${meeting.confirmedAt ? `
+                <a href="${generateGoogleCalendarUrl(meeting)}" target="_blank" class="btn btn-small btn-calendar">Add to Calendar</a>
+              ` : `
                 <button class="btn btn-small btn-confirm" onclick="confirmMeeting('${meeting.id}')">Confirm</button>
-              ` : ''}
+              `}
               <button class="btn btn-small btn-cancel" onclick="cancelMeeting('${meeting.id}')">Cancel</button>
             </div>
           </div>
@@ -861,6 +896,25 @@
       const div = document.createElement('div');
       div.textContent = text;
       return div.innerHTML;
+    }
+
+    function generateGoogleCalendarUrl(meeting) {
+      const startDate = new Date(meeting.scheduledAt);
+      const endDate = new Date(startDate.getTime() + 60 * 60 * 1000); // 1 hour meeting
+
+      // Format dates for Google Calendar (YYYYMMDDTHHmmssZ format)
+      const formatGoogleDate = (date) => {
+        return date.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+      };
+
+      const params = new URLSearchParams({
+        action: 'TEMPLATE',
+        text: meeting.meetingTitle,
+        dates: `${formatGoogleDate(startDate)}/${formatGoogleDate(endDate)}`,
+        details: `Meeting with ${meeting.clientName} (${meeting.clientEmail})`,
+      });
+
+      return `https://calendar.google.com/calendar/render?${params.toString()}`;
     }
 
     function showToast(message, type = 'success') {
