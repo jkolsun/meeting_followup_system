@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import express from 'express';
+import path from 'path';
 import { getDatabase, closeDatabase } from './db/schema';
 import meetingsRouter from './routes/meetings';
 import confirmationRouter from './routes/confirmation';
@@ -19,6 +20,9 @@ async function main() {
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
 
+  // Serve static files (admin dashboard)
+  app.use(express.static(path.join(__dirname, 'public')));
+
   // Health check
   app.get('/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
@@ -33,14 +37,7 @@ async function main() {
   const server = app.listen(PORT, () => {
     console.log(`🚀 Meeting Follow-up System running on http://localhost:${PORT}`);
     console.log('');
-    console.log('Available endpoints:');
-    console.log(`  POST   /api/meetings          - Create a new meeting`);
-    console.log(`  GET    /api/meetings          - List upcoming meetings`);
-    console.log(`  GET    /api/meetings/:id      - Get meeting details`);
-    console.log(`  POST   /api/meetings/:id/cancel  - Cancel a meeting`);
-    console.log(`  POST   /api/meetings/:id/confirm - Manually confirm a meeting`);
-    console.log(`  GET    /api/confirm/:token    - Confirm via link (client-facing)`);
-    console.log(`  POST   /api/webhooks/gmail    - Gmail push notifications`);
+    console.log('📊 Admin Dashboard: http://localhost:' + PORT);
     console.log('');
     console.log('⚠️  Make sure to run the worker process separately: npm run worker');
   });

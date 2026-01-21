@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meeting Follow-up System | Bright Automations</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: #f5f7fa;
+      color: #333;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 20px 0;
+      margin-bottom: 30px;
+    }
+
+    header .container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    header h1 {
+      font-size: 24px;
+      font-weight: 600;
+    }
+
+    .stats {
+      display: flex;
+      gap: 20px;
+    }
+
+    .stat {
+      background: rgba(255,255,255,0.2);
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 14px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 400px 1fr;
+      gap: 30px;
+    }
+
+    @media (max-width: 900px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+      padding: 24px;
+    }
+
+    .card h2 {
+      font-size: 18px;
+      margin-bottom: 20px;
+      color: #444;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 6px;
+      color: #555;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 15px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .form-group input:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      width: 100%;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-small {
+      padding: 6px 12px;
+      font-size: 13px;
+    }
+
+    .btn-confirm {
+      background: #28a745;
+      color: white;
+    }
+
+    .btn-confirm:hover {
+      background: #218838;
+    }
+
+    .btn-cancel {
+      background: #dc3545;
+      color: white;
+    }
+
+    .btn-cancel:hover {
+      background: #c82333;
+    }
+
+    .meeting-list {
+      max-height: 600px;
+      overflow-y: auto;
+    }
+
+    .meeting-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px;
+      border: 1px solid #eee;
+      border-radius: 10px;
+      margin-bottom: 12px;
+      transition: box-shadow 0.2s;
+    }
+
+    .meeting-item:hover {
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .meeting-info {
+      flex: 1;
+    }
+
+    .meeting-title {
+      font-weight: 600;
+      font-size: 16px;
+      margin-bottom: 4px;
+    }
+
+    .meeting-client {
+      color: #666;
+      font-size: 14px;
+    }
+
+    .meeting-time {
+      color: #888;
+      font-size: 13px;
+      margin-top: 4px;
+    }
+
+    .meeting-status {
+      margin-right: 16px;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+      text-transform: uppercase;
+    }
+
+    .status-pending {
+      background: #fff3cd;
+      color: #856404;
+    }
+
+    .status-confirmed {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .status-cancelled {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
+    .meeting-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      color: #888;
+    }
+
+    .empty-state svg {
+      width: 64px;
+      height: 64px;
+      margin-bottom: 16px;
+      opacity: 0.5;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      padding: 16px 24px;
+      border-radius: 8px;
+      color: white;
+      font-weight: 500;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s;
+      z-index: 1000;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .toast.success {
+      background: #28a745;
+    }
+
+    .toast.error {
+      background: #dc3545;
+    }
+
+    .loading {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .filter-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .filter-tab {
+      padding: 8px 16px;
+      border: 1px solid #ddd;
+      border-radius: 20px;
+      background: white;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+
+    .filter-tab:hover {
+      border-color: #667eea;
+    }
+
+    .filter-tab.active {
+      background: #667eea;
+      color: white;
+      border-color: #667eea;
+    }
+
+    .refresh-btn {
+      background: none;
+      border: 1px solid #ddd;
+      padding: 8px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .refresh-btn:hover {
+      background: #f5f5f5;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <h1>Meeting Follow-up System</h1>
+      <div class="stats">
+        <div class="stat" id="stat-total">Total: 0</div>
+        <div class="stat" id="stat-pending">Pending: 0</div>
+        <div class="stat" id="stat-confirmed">Confirmed: 0</div>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="grid">
+      <!-- Add Meeting Form -->
+      <div class="card">
+        <h2>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
+          Add New Meeting
+        </h2>
+        <form id="meeting-form">
+          <div class="form-group">
+            <label for="clientName">Client Name</label>
+            <input type="text" id="clientName" name="clientName" placeholder="John Doe" required>
+          </div>
+          <div class="form-group">
+            <label for="clientEmail">Client Email</label>
+            <input type="email" id="clientEmail" name="clientEmail" placeholder="john@example.com" required>
+          </div>
+          <div class="form-group">
+            <label for="meetingTitle">Meeting Title</label>
+            <input type="text" id="meetingTitle" name="meetingTitle" placeholder="Strategy Discussion" required>
+          </div>
+          <div class="form-group">
+            <label for="scheduledDate">Date</label>
+            <input type="date" id="scheduledDate" name="scheduledDate" required>
+          </div>
+          <div class="form-group">
+            <label for="scheduledTime">Time</label>
+            <input type="time" id="scheduledTime" name="scheduledTime" required>
+          </div>
+          <button type="submit" class="btn btn-primary" id="submit-btn">
+            <span class="btn-text">Schedule Meeting</span>
+          </button>
+        </form>
+      </div>
+
+      <!-- Meeting List -->
+      <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+          <h2 style="margin-bottom: 0;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+            Upcoming Meetings
+          </h2>
+          <button class="refresh-btn" onclick="loadMeetings()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M23 4v6h-6"></path>
+              <path d="M1 20v-6h6"></path>
+              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+            </svg>
+            Refresh
+          </button>
+        </div>
+
+        <div class="filter-tabs">
+          <button class="filter-tab active" data-filter="all">All</button>
+          <button class="filter-tab" data-filter="pending">Pending</button>
+          <button class="filter-tab" data-filter="confirmed">Confirmed</button>
+        </div>
+
+        <div class="meeting-list" id="meeting-list">
+          <div class="empty-state">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+            <p>No upcoming meetings</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast notification -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const API_BASE = '/api';
+    let allMeetings = [];
+    let currentFilter = 'all';
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      setMinDate();
+      loadMeetings();
+      setupForm();
+      setupFilters();
+    });
+
+    function setMinDate() {
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('scheduledDate').min = today;
+    }
+
+    function setupForm() {
+      const form = document.getElementById('meeting-form');
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        await createMeeting();
+      });
+    }
+
+    function setupFilters() {
+      document.querySelectorAll('.filter-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+          document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+          currentFilter = tab.dataset.filter;
+          renderMeetings();
+        });
+      });
+    }
+
+    async function loadMeetings() {
+      try {
+        const response = await fetch(`${API_BASE}/meetings`);
+        const data = await response.json();
+        allMeetings = data.meetings || [];
+        updateStats();
+        renderMeetings();
+      } catch (error) {
+        showToast('Failed to load meetings', 'error');
+      }
+    }
+
+    function updateStats() {
+      const total = allMeetings.length;
+      const pending = allMeetings.filter(m => !m.confirmedAt && !m.cancelledAt).length;
+      const confirmed = allMeetings.filter(m => m.confirmedAt && !m.cancelledAt).length;
+
+      document.getElementById('stat-total').textContent = `Total: ${total}`;
+      document.getElementById('stat-pending').textContent = `Pending: ${pending}`;
+      document.getElementById('stat-confirmed').textContent = `Confirmed: ${confirmed}`;
+    }
+
+    function renderMeetings() {
+      const list = document.getElementById('meeting-list');
+
+      let filtered = allMeetings;
+      if (currentFilter === 'pending') {
+        filtered = allMeetings.filter(m => !m.confirmedAt && !m.cancelledAt);
+      } else if (currentFilter === 'confirmed') {
+        filtered = allMeetings.filter(m => m.confirmedAt && !m.cancelledAt);
+      }
+
+      // Filter out cancelled meetings from the list
+      filtered = filtered.filter(m => !m.cancelledAt);
+
+      if (filtered.length === 0) {
+        list.innerHTML = `
+          <div class="empty-state">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+            <p>No ${currentFilter === 'all' ? '' : currentFilter} meetings</p>
+          </div>
+        `;
+        return;
+      }
+
+      list.innerHTML = filtered.map(meeting => {
+        const date = new Date(meeting.scheduledAt);
+        const status = meeting.confirmedAt ? 'confirmed' : 'pending';
+        const statusLabel = meeting.confirmedAt ? 'Confirmed' : 'Awaiting Confirmation';
+
+        return `
+          <div class="meeting-item" data-id="${meeting.id}">
+            <div class="meeting-info">
+              <div class="meeting-title">${escapeHtml(meeting.meetingTitle)}</div>
+              <div class="meeting-client">${escapeHtml(meeting.clientName)} &lt;${escapeHtml(meeting.clientEmail)}&gt;</div>
+              <div class="meeting-time">${formatDate(date)}</div>
+            </div>
+            <div class="meeting-status">
+              <span class="status-badge status-${status}">${statusLabel}</span>
+            </div>
+            <div class="meeting-actions">
+              ${!meeting.confirmedAt ? `
+                <button class="btn btn-small btn-confirm" onclick="confirmMeeting('${meeting.id}')">Confirm</button>
+              ` : ''}
+              <button class="btn btn-small btn-cancel" onclick="cancelMeeting('${meeting.id}')">Cancel</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function createMeeting() {
+      const btn = document.getElementById('submit-btn');
+      const btnText = btn.querySelector('.btn-text');
+
+      btn.disabled = true;
+      btnText.innerHTML = '<span class="loading"></span> Scheduling...';
+
+      const date = document.getElementById('scheduledDate').value;
+      const time = document.getElementById('scheduledTime').value;
+      const scheduledAt = new Date(`${date}T${time}`).toISOString();
+
+      const data = {
+        clientName: document.getElementById('clientName').value,
+        clientEmail: document.getElementById('clientEmail').value,
+        meetingTitle: document.getElementById('meetingTitle').value,
+        scheduledAt
+      };
+
+      try {
+        const response = await fetch(`${API_BASE}/meetings`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || 'Failed to create meeting');
+        }
+
+        showToast('Meeting scheduled! Reminders will be sent automatically.', 'success');
+        document.getElementById('meeting-form').reset();
+        setMinDate();
+        await loadMeetings();
+      } catch (error) {
+        showToast(error.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btnText.textContent = 'Schedule Meeting';
+      }
+    }
+
+    async function confirmMeeting(id) {
+      if (!confirm('Mark this meeting as confirmed?')) return;
+
+      try {
+        const response = await fetch(`${API_BASE}/meetings/${id}/confirm`, {
+          method: 'POST'
+        });
+
+        if (!response.ok) throw new Error('Failed to confirm');
+
+        showToast('Meeting confirmed!', 'success');
+        await loadMeetings();
+      } catch (error) {
+        showToast('Failed to confirm meeting', 'error');
+      }
+    }
+
+    async function cancelMeeting(id) {
+      if (!confirm('Are you sure you want to cancel this meeting?')) return;
+
+      try {
+        const response = await fetch(`${API_BASE}/meetings/${id}/cancel`, {
+          method: 'POST'
+        });
+
+        if (!response.ok) throw new Error('Failed to cancel');
+
+        showToast('Meeting cancelled', 'success');
+        await loadMeetings();
+      } catch (error) {
+        showToast('Failed to cancel meeting', 'error');
+      }
+    }
+
+    function formatDate(date) {
+      return date.toLocaleDateString('en-US', {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit'
+      });
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function showToast(message, type = 'success') {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.className = `toast ${type} show`;
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3000);
+    }
+
+    // Auto-refresh every 30 seconds
+    setInterval(loadMeetings, 30000);
+  </script>
+</body>
+</html>
