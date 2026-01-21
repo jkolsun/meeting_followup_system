@@ -10,6 +10,7 @@ import {
   getEmailActivityByMeetingId,
 } from '../db/repositories';
 import { scheduleRemindersForMeeting, cancelRemindersForMeeting } from '../jobs/queue';
+import { sendBookingConfirmationEmail } from '../services/email';
 
 const router = Router();
 
@@ -45,6 +46,14 @@ router.post('/meetings', async (req: Request, res: Response) => {
       scheduledAt: scheduledDate,
       assignedUserId: assignedUserId || undefined,
     });
+
+    // Send immediate booking confirmation email
+    try {
+      await sendBookingConfirmationEmail(meeting);
+    } catch (emailError) {
+      console.error('Failed to send booking confirmation email:', emailError);
+      // Don't fail the meeting creation if email fails - it's logged in activity
+    }
 
     // Schedule all reminder jobs
     await scheduleRemindersForMeeting(meeting.id);

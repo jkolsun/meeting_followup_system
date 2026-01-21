@@ -310,6 +310,79 @@ function getActivityTypeForReminder(reminderType: ReminderType): EmailActivityTy
 
 // ============ Email Sending Functions ============
 
+// Send immediate booking confirmation when meeting is created
+export async function sendBookingConfirmationEmail(meeting: Meeting): Promise<SendEmailResult> {
+  const user = meeting.assignedUserId ? await getUserById(meeting.assignedUserId) : null;
+  const senderName = user?.name || 'The Team';
+
+  // Use the confirmation_request template for the initial booking email
+  const template = await getTemplateContent('confirmation_request', meeting.assignedUserId, senderName);
+
+  const vars: TemplateVariables = {
+    clientName: meeting.clientName,
+    meetingTitle: meeting.meetingTitle,
+    meetingDate: formatMeetingDate(meeting.scheduledAt),
+    confirmUrl: getConfirmationUrl(meeting),
+    senderName,
+  };
+
+  const subject = replaceTemplateVariables(template.subject, vars);
+  const htmlBody = replaceTemplateVariables(template.htmlBody, vars);
+  const textBody = replaceTemplateVariables(template.textBody, vars);
+
+  try {
+    let result: SendEmailResult;
+    if (user && user.gmailRefreshToken) {
+      result = await sendEmailAsUser(user, {
+        to: meeting.clientEmail,
+        subject,
+        htmlBody,
+        textBody,
+      });
+    } else {
+      result = await sendEmail({
+        to: meeting.clientEmail,
+        subject,
+        htmlBody,
+        textBody,
+      });
+    }
+
+    // Track the email thread for reply detection
+    await createEmailThread({
+      meetingId: meeting.id,
+      gmailThreadId: result.threadId,
+      gmailMessageId: result.messageId,
+    });
+
+    // Log activity
+    await createEmailActivity({
+      meetingId: meeting.id,
+      activityType: 'booking_confirmation',
+      recipientEmail: meeting.clientEmail,
+      subject,
+      gmailMessageId: result.messageId,
+      gmailThreadId: result.threadId,
+      status: 'sent',
+    });
+
+    console.log(`Sent booking confirmation email to ${meeting.clientEmail}${user ? ` (from ${user.name})` : ''}`);
+
+    return result;
+  } catch (error) {
+    // Log failed activity
+    await createEmailActivity({
+      meetingId: meeting.id,
+      activityType: 'booking_confirmation',
+      recipientEmail: meeting.clientEmail,
+      subject,
+      status: 'failed',
+      errorMessage: error instanceof Error ? error.message : 'Unknown error',
+    });
+    throw error;
+  }
+}
+
 export async function sendReminderEmail(
   meeting: Meeting,
   reminderType: ReminderType

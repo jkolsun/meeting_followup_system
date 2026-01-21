@@ -84,6 +84,7 @@ export const REMINDER_TYPES: ReminderType[] = [
 ];
 
 export type EmailActivityType =
+  | 'booking_confirmation'
   | 'reminder_48h'
   | 'reminder_24h'
   | 'reminder_6h'

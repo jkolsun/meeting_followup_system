@@ -798,7 +798,8 @@
           throw new Error(error.error || 'Failed to create meeting');
         }
 
-        showToast('Meeting scheduled! Reminders will be sent automatically.', 'success');
+        showToast('Meeting scheduled! Confirmation email sent.', 'success');
+        await loadActivity(); // Refresh activity to show the booking email
         document.getElementById('meeting-form').reset();
         setMinDate();
         populateUserDropdown(); // Restore user selection
@@ -935,6 +936,7 @@
 
     function getActivityTypeInfo(type) {
       const types = {
+        'booking_confirmation': { label: 'Booked', class: 'confirmation' },
         'reminder_48h': { label: '48h Reminder', class: 'reminder' },
         'reminder_24h': { label: '24h Reminder', class: 'reminder' },
         'reminder_6h': { label: '6h Reminder', class: 'reminder' },
