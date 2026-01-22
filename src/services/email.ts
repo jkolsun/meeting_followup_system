@@ -33,6 +33,30 @@ function replaceTemplateVariables(template: string, vars: TemplateVariables): st
 
 // ============ Default Templates ============
 
+// Signature HTML block for all emails
+const EMAIL_SIGNATURE_HTML = `
+    <table cellpadding="0" cellspacing="0" style="margin-top: 30px; font-family: Arial, sans-serif;">
+      <tr>
+        <td style="padding-right: 15px; vertical-align: top;">
+          <img src="https://meeting-followup-production.up.railway.app/logo.png" alt="Bright Automations" style="width: 80px; height: 80px; border-radius: 8px;">
+        </td>
+        <td style="vertical-align: top; border-left: 2px solid #4A8B8B; padding-left: 15px;">
+          <p style="margin: 0; font-weight: bold; color: #333;">{{senderName}}</p>
+          <p style="margin: 2px 0; color: #666; font-size: 13px;">Co-Founder | Lead Developer</p>
+          <p style="margin: 2px 0; color: #666; font-size: 13px;">610-256-9844</p>
+          <p style="margin: 2px 0;"><a href="mailto:admin@brightautomations.net" style="color: #4A8B8B; text-decoration: none; font-size: 13px;">admin@brightautomations.net</a></p>
+          <p style="margin: 2px 0;"><a href="https://www.brightautomations.org" style="color: #4A8B8B; text-decoration: none; font-size: 13px;">www.brightautomations.org</a></p>
+        </td>
+      </tr>
+    </table>`;
+
+const EMAIL_SIGNATURE_TEXT = `
+{{senderName}}
+Co-Founder | Lead Developer
+610-256-9844
+admin@brightautomations.net
+www.brightautomations.org`;
+
 export function getDefaultConfirmationRequestTemplate(senderName: string): { subject: string; htmlBody: string; textBody: string } {
   return {
     subject: 'Please confirm: {{meetingTitle}}',
@@ -45,7 +69,7 @@ export function getDefaultConfirmationRequestTemplate(senderName: string): { sub
   <title>Please Confirm Your Meeting</title>
 </head>
 <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-  <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; border-radius: 10px 10px 0 0;">
+  <div style="background: #4A8B8B; padding: 20px; border-radius: 10px 10px 0 0;">
     <h1 style="color: white; margin: 0; font-size: 24px;">Please Confirm Your Meeting</h1>
   </div>
 
@@ -54,13 +78,13 @@ export function getDefaultConfirmationRequestTemplate(senderName: string): { sub
 
     <p>We'd like to confirm your upcoming meeting. Please confirm your attendance by clicking the button below or simply replying to this email.</p>
 
-    <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #667eea;">
-      <h3 style="margin-top: 0; color: #667eea;">{{meetingTitle}}</h3>
+    <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #4A8B8B;">
+      <h3 style="margin-top: 0; color: #4A8B8B;">{{meetingTitle}}</h3>
       <p style="margin-bottom: 0;"><strong>When:</strong> {{meetingDate}}</p>
     </div>
 
     <div style="text-align: center; margin: 30px 0;">
-      <a href="{{confirmUrl}}" style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 40px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px;">
+      <a href="{{confirmUrl}}" style="display: inline-block; background: #4A8B8B; color: white; padding: 15px 40px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px;">
         Confirm My Attendance
       </a>
     </div>
@@ -76,9 +100,9 @@ export function getDefaultConfirmationRequestTemplate(senderName: string): { sub
     </p>
 
     <p style="color: #666; font-size: 14px; margin-top: 20px;">
-      Best regards,<br>
-      {{senderName}}
+      Best regards,
     </p>
+    ${EMAIL_SIGNATURE_HTML}
   </div>
 </body>
 </html>`,
@@ -98,7 +122,7 @@ Or simply reply to this email to confirm.
 If you can no longer attend, please let us know as soon as possible so we can reschedule.
 
 Best regards,
-{{senderName}}`,
+${EMAIL_SIGNATURE_TEXT}`,
   };
 }
 
@@ -114,7 +138,7 @@ export function getDefaultFinalReminderTemplate(senderName: string): { subject: 
   <title>Meeting Reminder</title>
 </head>
 <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-  <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; border-radius: 10px 10px 0 0;">
+  <div style="background: #4A8B8B; padding: 20px; border-radius: 10px 10px 0 0;">
     <h1 style="color: white; margin: 0; font-size: 24px;">Meeting in 1 Hour</h1>
   </div>
 
@@ -123,17 +147,17 @@ export function getDefaultFinalReminderTemplate(senderName: string): { subject: 
 
     <p>This is a friendly reminder that your meeting is coming up in <strong>1 hour</strong>.</p>
 
-    <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #667eea;">
-      <h3 style="margin-top: 0; color: #667eea;">{{meetingTitle}}</h3>
+    <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #4A8B8B;">
+      <h3 style="margin-top: 0; color: #4A8B8B;">{{meetingTitle}}</h3>
       <p style="margin-bottom: 0;"><strong>When:</strong> {{meetingDate}}</p>
     </div>
 
     <p>We look forward to speaking with you!</p>
 
     <p style="color: #666; font-size: 14px; margin-top: 30px;">
-      Best regards,<br>
-      {{senderName}}
+      Best regards,
     </p>
+    ${EMAIL_SIGNATURE_HTML}
   </div>
 </body>
 </html>`,
@@ -149,7 +173,7 @@ When: {{meetingDate}}
 We look forward to speaking with you!
 
 Best regards,
-{{senderName}}`,
+${EMAIL_SIGNATURE_TEXT}`,
   };
 }
 
@@ -182,9 +206,9 @@ export function getDefaultAcknowledgementTemplate(senderName: string): { subject
     <p>You'll receive a final reminder 1 hour before the meeting.</p>
 
     <p style="color: #666; font-size: 14px; margin-top: 30px;">
-      Best regards,<br>
-      {{senderName}}
+      Best regards,
     </p>
+    ${EMAIL_SIGNATURE_HTML}
   </div>
 </body>
 </html>`,
@@ -200,7 +224,7 @@ When: {{meetingDate}}
 You'll receive a final reminder 1 hour before the meeting.
 
 Best regards,
-{{senderName}}`,
+${EMAIL_SIGNATURE_TEXT}`,
   };
 }
 
@@ -233,9 +257,9 @@ export function getDefaultCancellationTemplate(senderName: string): { subject: s
     <p>If you'd like to reschedule, please contact us and we'll be happy to find a new time that works for you.</p>
 
     <p style="color: #666; font-size: 14px; margin-top: 30px;">
-      Best regards,<br>
-      {{senderName}}
+      Best regards,
     </p>
+    ${EMAIL_SIGNATURE_HTML}
   </div>
 </body>
 </html>`,
@@ -251,7 +275,7 @@ Originally scheduled: {{meetingDate}}
 If you'd like to reschedule, please contact us and we'll be happy to find a new time that works for you.
 
 Best regards,
-{{senderName}}`,
+${EMAIL_SIGNATURE_TEXT}`,
   };
 }
 
