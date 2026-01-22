@@ -33,12 +33,13 @@ function replaceTemplateVariables(template: string, vars: TemplateVariables): st
 
 // ============ Default Templates ============
 
-// Signature HTML block for all emails
-const EMAIL_SIGNATURE_HTML = `
+// Signature HTML block for all emails - uses BASE_URL for logo
+function getEmailSignatureHtml(): string {
+  return `
     <table cellpadding="0" cellspacing="0" style="margin-top: 30px; font-family: Arial, sans-serif;">
       <tr>
         <td style="padding-right: 15px; vertical-align: top;">
-          <img src="https://meeting-followup-production.up.railway.app/logo.png" alt="Bright Automations" style="width: 80px; height: 80px; border-radius: 8px;">
+          <img src="${BASE_URL}/logo.png" alt="Bright Automations" style="width: 80px; height: 80px; border-radius: 8px;">
         </td>
         <td style="vertical-align: top; border-left: 2px solid #4A8B8B; padding-left: 15px;">
           <p style="margin: 0; font-weight: bold; color: #333;">{{senderName}}</p>
@@ -49,6 +50,7 @@ const EMAIL_SIGNATURE_HTML = `
         </td>
       </tr>
     </table>`;
+}
 
 const EMAIL_SIGNATURE_TEXT = `
 {{senderName}}
@@ -102,7 +104,7 @@ export function getDefaultConfirmationRequestTemplate(senderName: string): { sub
     <p style="color: #666; font-size: 14px; margin-top: 20px;">
       Best regards,
     </p>
-    ${EMAIL_SIGNATURE_HTML}
+    ${getEmailSignatureHtml()}
   </div>
 </body>
 </html>`,
@@ -157,7 +159,7 @@ export function getDefaultFinalReminderTemplate(senderName: string): { subject: 
     <p style="color: #666; font-size: 14px; margin-top: 30px;">
       Best regards,
     </p>
-    ${EMAIL_SIGNATURE_HTML}
+    ${getEmailSignatureHtml()}
   </div>
 </body>
 </html>`,
@@ -208,7 +210,7 @@ export function getDefaultAcknowledgementTemplate(senderName: string): { subject
     <p style="color: #666; font-size: 14px; margin-top: 30px;">
       Best regards,
     </p>
-    ${EMAIL_SIGNATURE_HTML}
+    ${getEmailSignatureHtml()}
   </div>
 </body>
 </html>`,
@@ -259,7 +261,7 @@ export function getDefaultCancellationTemplate(senderName: string): { subject: s
     <p style="color: #666; font-size: 14px; margin-top: 30px;">
       Best regards,
     </p>
-    ${EMAIL_SIGNATURE_HTML}
+    ${getEmailSignatureHtml()}
   </div>
 </body>
 </html>`,
