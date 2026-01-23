@@ -1,5 +1,119 @@
 import { queryAll, queryOne, execute, uuidv4 } from './database';
-import { Meeting, ReminderJob, ReminderType, MeetingWithReminders, User, EmailTemplate, TemplateType, EmailActivity, EmailActivityType, EmailActivityStatus } from '../types';
+import { Meeting, ReminderJob, ReminderType, MeetingWithReminders, User, EmailTemplate, TemplateType, EmailActivity, EmailActivityType, EmailActivityStatus, Organization, PlanType, UserRole } from '../types';
+
+// ============ Organization Repository ============
+
+export async function createOrganization(data: {
+  name: string;
+  slug: string;
+  ownerAuthId: string;
+  logoUrl?: string;
+  primaryColor?: string;
+}): Promise<Organization> {
+  const id = uuidv4();
+  const now = new Date().toISOString();
+
+  await execute(
+    `INSERT INTO organizations (id, name, slug, owner_auth_id, logo_url, primary_color, plan, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, 'free', ?, ?)`,
+    [id, data.name, data.slug, data.ownerAuthId, data.logoUrl || null, data.primaryColor || '#4A8B8B', now, now]
+  );
+
+  return (await getOrganizationById(id))!;
+}
+
+export async function getOrganizationById(id: string): Promise<Organization | null> {
+  const row = await queryOne('SELECT * FROM organizations WHERE id = ?', [id]);
+  return row ? mapRowToOrganization(row) : null;
+}
+
+export async function getOrganizationBySlug(slug: string): Promise<Organization | null> {
+  const row = await queryOne('SELECT * FROM organizations WHERE slug = ?', [slug]);
+  return row ? mapRowToOrganization(row) : null;
+}
+
+export async function getOrganizationByOwnerAuthId(authId: string): Promise<Organization | null> {
+  const row = await queryOne('SELECT * FROM organizations WHERE owner_auth_id = ?', [authId]);
+  return row ? mapRowToOrganization(row) : null;
+}
+
+export async function updateOrganization(orgId: string, data: {
+  name?: string;
+  logoUrl?: string;
+  primaryColor?: string;
+  googleCalendarConnected?: boolean;
+  googleCalendarRefreshToken?: string;
+  stripeCustomerId?: string;
+  stripeSubscriptionId?: string;
+  plan?: PlanType;
+}): Promise<Organization | null> {
+  const updates: string[] = [];
+  const params: any[] = [];
+
+  if (data.name !== undefined) {
+    updates.push('name = ?');
+    params.push(data.name);
+  }
+  if (data.logoUrl !== undefined) {
+    updates.push('logo_url = ?');
+    params.push(data.logoUrl);
+  }
+  if (data.primaryColor !== undefined) {
+    updates.push('primary_color = ?');
+    params.push(data.primaryColor);
+  }
+  if (data.googleCalendarConnected !== undefined) {
+    updates.push('google_calendar_connected = ?');
+    params.push(data.googleCalendarConnected ? 1 : 0);
+  }
+  if (data.googleCalendarRefreshToken !== undefined) {
+    updates.push('google_calendar_refresh_token = ?');
+    params.push(data.googleCalendarRefreshToken);
+  }
+  if (data.stripeCustomerId !== undefined) {
+    updates.push('stripe_customer_id = ?');
+    params.push(data.stripeCustomerId);
+  }
+  if (data.stripeSubscriptionId !== undefined) {
+    updates.push('stripe_subscription_id = ?');
+    params.push(data.stripeSubscriptionId);
+  }
+  if (data.plan !== undefined) {
+    updates.push('plan = ?');
+    params.push(data.plan);
+  }
+
+  if (updates.length === 0) return getOrganizationById(orgId);
+
+  updates.push('updated_at = ?');
+  params.push(new Date().toISOString());
+  params.push(orgId);
+
+  await execute(`UPDATE organizations SET ${updates.join(', ')} WHERE id = ?`, params);
+  return getOrganizationById(orgId);
+}
+
+export async function deleteOrganization(orgId: string): Promise<void> {
+  await execute('DELETE FROM organizations WHERE id = ?', [orgId]);
+}
+
+function mapRowToOrganization(row: any): Organization {
+  return {
+    id: row.id,
+    name: row.name,
+    slug: row.slug,
+    logoUrl: row.logo_url || null,
+    primaryColor: row.primary_color || '#4A8B8B',
+    ownerAuthId: row.owner_auth_id,
+    googleCalendarConnected: row.google_calendar_connected === 1 || row.google_calendar_connected === true,
+    googleCalendarRefreshToken: row.google_calendar_refresh_token || null,
+    stripeCustomerId: row.stripe_customer_id || null,
+    stripeSubscriptionId: row.stripe_subscription_id || null,
+    plan: (row.plan || 'free') as PlanType,
+    createdAt: new Date(row.created_at),
+    updatedAt: new Date(row.updated_at),
+  };
+}
 
 // ============ Meeting Repository ============
 
@@ -9,15 +123,17 @@ export async function createMeeting(data: {
   meetingTitle: string;
   scheduledAt: Date;
   assignedUserId?: string;
+  organizationId?: string;
+  googleCalendarEventId?: string;
 }): Promise<Meeting> {
   const id = uuidv4();
   const confirmationToken = uuidv4();
   const now = new Date().toISOString();
 
   await execute(
-    `INSERT INTO meetings (id, client_name, client_email, meeting_title, scheduled_at, confirmation_token, assigned_user_id, created_at, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [id, data.clientName, data.clientEmail, data.meetingTitle, data.scheduledAt.toISOString(), confirmationToken, data.assignedUserId || null, now, now]
+    `INSERT INTO meetings (id, organization_id, client_name, client_email, meeting_title, scheduled_at, confirmation_token, assigned_user_id, google_calendar_event_id, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [id, data.organizationId || null, data.clientName, data.clientEmail, data.meetingTitle, data.scheduledAt.toISOString(), confirmationToken, data.assignedUserId || null, data.googleCalendarEventId || null, now, now]
   );
 
   return (await getMeetingById(id))!;
@@ -77,9 +193,19 @@ export async function getUnconfirmedMeetings(): Promise<Meeting[]> {
   return rows.map(mapRowToMeeting);
 }
 
+export async function getMeetingsByOrganizationId(orgId: string): Promise<Meeting[]> {
+  const now = new Date().toISOString();
+  const rows = await queryAll(
+    `SELECT * FROM meetings WHERE organization_id = ? AND scheduled_at > ? AND cancelled_at IS NULL ORDER BY scheduled_at ASC`,
+    [orgId, now]
+  );
+  return rows.map(mapRowToMeeting);
+}
+
 function mapRowToMeeting(row: any): Meeting {
   return {
     id: row.id,
+    organizationId: row.organization_id || null,
     clientName: row.client_name,
     clientEmail: row.client_email,
     meetingTitle: row.meeting_title,
@@ -88,6 +214,7 @@ function mapRowToMeeting(row: any): Meeting {
     cancelledAt: row.cancelled_at ? new Date(row.cancelled_at) : null,
     confirmationToken: row.confirmation_token,
     assignedUserId: row.assigned_user_id || null,
+    googleCalendarEventId: row.google_calendar_event_id || null,
     createdAt: new Date(row.created_at),
     updatedAt: new Date(row.updated_at),
   };
@@ -189,15 +316,18 @@ export async function updateEmailThreadIds(meetingId: string, threadId: string, 
 export async function createUser(data: {
   name: string;
   email: string;
+  organizationId?: string;
+  authId?: string;
+  role?: UserRole;
   gmailRefreshToken?: string;
 }): Promise<User> {
   const id = uuidv4();
   const now = new Date().toISOString();
 
   await execute(
-    `INSERT INTO users (id, name, email, gmail_refresh_token, is_active, created_at)
-     VALUES (?, ?, ?, ?, 1, ?)`,
-    [id, data.name, data.email, data.gmailRefreshToken || null, now]
+    `INSERT INTO users (id, organization_id, auth_id, name, email, role, gmail_refresh_token, is_active, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?)`,
+    [id, data.organizationId || null, data.authId || null, data.name, data.email, data.role || 'member', data.gmailRefreshToken || null, now]
   );
 
   return (await getUserById(id))!;
@@ -259,11 +389,29 @@ export async function deleteUser(userId: string): Promise<void> {
   await execute('DELETE FROM users WHERE id = ?', [userId]);
 }
 
+export async function getUserByAuthId(authId: string): Promise<User | null> {
+  const row = await queryOne('SELECT * FROM users WHERE auth_id = ?', [authId]);
+  return row ? mapRowToUser(row) : null;
+}
+
+export async function getUsersByOrganizationId(orgId: string): Promise<User[]> {
+  const rows = await queryAll('SELECT * FROM users WHERE organization_id = ? ORDER BY created_at ASC', [orgId]);
+  return rows.map(mapRowToUser);
+}
+
+export async function getActiveUsersByOrganizationId(orgId: string): Promise<User[]> {
+  const rows = await queryAll('SELECT * FROM users WHERE organization_id = ? AND is_active = 1 ORDER BY created_at ASC', [orgId]);
+  return rows.map(mapRowToUser);
+}
+
 function mapRowToUser(row: any): User {
   return {
     id: row.id,
+    organizationId: row.organization_id || null,
+    authId: row.auth_id || null,
     name: row.name,
     email: row.email,
+    role: (row.role || 'member') as UserRole,
     gmailRefreshToken: row.gmail_refresh_token || null,
     isActive: row.is_active === 1 || row.is_active === true,
     createdAt: new Date(row.created_at),

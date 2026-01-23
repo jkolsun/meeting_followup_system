@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@google-cloud/pubsub": "^4.3.0",
+    "@supabase/supabase-js": "^2.91.1",
     "bullmq": "^5.1.0",
     "date-fns": "^3.2.0",
     "dotenv": "^16.3.1",

@@ -7,6 +7,8 @@ import confirmationRouter from './routes/confirmation';
 import webhookRouter from './routes/webhook';
 import usersRouter from './routes/users';
 import templatesRouter from './routes/templates';
+import authRouter from './routes/auth';
+import { isAuthEnabled } from './config/supabase';
 
 const PORT = parseInt(process.env.PORT || '3000', 10);
 
@@ -30,6 +32,9 @@ async function main() {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
   });
 
+  // Auth routes (must be before other API routes)
+  app.use('/api', authRouter);
+
   // API Routes
   app.use('/api', meetingsRouter);
   app.use('/api', confirmationRouter);
@@ -43,6 +48,15 @@ async function main() {
     console.log('');
     console.log('Admin Dashboard: http://localhost:' + PORT);
     console.log('Settings: http://localhost:' + PORT + '/settings.html');
+    if (isAuthEnabled()) {
+      console.log('');
+      console.log('Authentication: Enabled (Supabase)');
+      console.log('Login: http://localhost:' + PORT + '/login.html');
+    } else {
+      console.log('');
+      console.log('Authentication: Disabled (demo mode)');
+      console.log('To enable auth, set SUPABASE_URL and SUPABASE_ANON_KEY env vars');
+    }
     console.log('');
     console.log('Make sure to run the worker process separately: npm run worker');
   });

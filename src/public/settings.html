@@ -131,6 +131,51 @@
       color: #1a1a2e;
     }
 
+    .top-bar-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .user-menu {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding-left: 16px;
+      border-left: 1px solid #e8ecef;
+    }
+
+    .user-name {
+      font-size: 14px;
+      font-weight: 500;
+      color: #374151;
+    }
+
+    .logout-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 12px;
+      border: 1px solid #e8ecef;
+      border-radius: 8px;
+      background: white;
+      color: #6b7280;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .logout-btn:hover {
+      background: #f9fafb;
+      color: #ef4444;
+      border-color: #fca5a5;
+    }
+
+    .logout-btn svg {
+      width: 16px;
+      height: 16px;
+    }
+
     .content-area {
       padding: 32px;
       max-width: 1200px;
@@ -673,6 +718,14 @@
         </svg>
         Settings
       </a>
+      <a href="/integrations.html" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+          <polyline points="15 3 21 3 21 9"></polyline>
+          <line x1="10" y1="14" x2="21" y2="3"></line>
+        </svg>
+        Integrations
+      </a>
     </nav>
   </aside>
 
@@ -680,6 +733,19 @@
   <main class="main-content">
     <div class="top-bar">
       <h1 class="page-title">Settings</h1>
+      <div class="top-bar-actions">
+        <div class="user-menu" id="user-menu" style="display: none;">
+          <span class="user-name" id="user-name"></span>
+          <button class="logout-btn" onclick="logout()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+              <polyline points="16 17 21 12 16 7"></polyline>
+              <line x1="21" y1="12" x2="9" y2="12"></line>
+            </svg>
+            Logout
+          </button>
+        </div>
+      </div>
     </div>
 
     <div class="content-area">
@@ -835,12 +901,16 @@
   <!-- Toast notification -->
   <div class="toast" id="toast"></div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     const API_BASE = '/api';
     let allUsers = [];
     let currentTemplates = [];
     let currentTemplateType = 'confirmation_request';
     let currentTemplateId = null;
+    let supabaseClient = null;
+    let currentUser = null;
+    let authToken = null;
 
     const TEMPLATE_LABELS = {
       'confirmation_request': 'Confirmation Request',
@@ -850,11 +920,69 @@
     };
 
     // Initialize
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', async () => {
+      await initAuth();
       setupTabs();
       loadUsers();
       checkUrlParams();
     });
+
+    async function initAuth() {
+      try {
+        const configResponse = await fetch(`${API_BASE}/auth/config`);
+        const config = await configResponse.json();
+
+        if (!config.enabled) return;
+
+        supabaseClient = window.supabase.createClient(config.url, config.anonKey);
+        const { data: { session } } = await supabaseClient.auth.getSession();
+
+        if (session) {
+          currentUser = session.user;
+          authToken = session.access_token;
+          updateUserMenu();
+        } else {
+          window.location.href = '/login.html';
+          return;
+        }
+
+        supabaseClient.auth.onAuthStateChange((event, session) => {
+          if (event === 'SIGNED_OUT' || !session) {
+            window.location.href = '/login.html';
+          } else if (session) {
+            currentUser = session.user;
+            authToken = session.access_token;
+            updateUserMenu();
+          }
+        });
+      } catch (error) {
+        console.log('Auth not configured, running in demo mode');
+      }
+    }
+
+    function updateUserMenu() {
+      const userMenu = document.getElementById('user-menu');
+      const userName = document.getElementById('user-name');
+
+      if (currentUser) {
+        userMenu.style.display = 'flex';
+        userName.textContent = currentUser.email;
+      }
+    }
+
+    async function logout() {
+      if (supabaseClient) {
+        await supabaseClient.auth.signOut();
+      }
+      window.location.href = '/login.html';
+    }
+
+    function getAuthHeaders() {
+      if (authToken) {
+        return { 'Authorization': `Bearer ${authToken}` };
+      }
+      return {};
+    }
 
     function checkUrlParams() {
       const params = new URLSearchParams(window.location.search);
@@ -881,7 +1009,9 @@
 
     async function loadUsers() {
       try {
-        const response = await fetch(`${API_BASE}/users`);
+        const response = await fetch(`${API_BASE}/users`, {
+          headers: getAuthHeaders()
+        });
         const data = await response.json();
         allUsers = data.users || [];
         renderUserList();
@@ -967,7 +1097,7 @@
       try {
         const response = await fetch(`${API_BASE}/users`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
           body: JSON.stringify({ name, email })
         });
 
@@ -986,7 +1116,9 @@
 
     async function connectGmail(userId) {
       try {
-        const response = await fetch(`${API_BASE}/users/${userId}/auth-url`);
+        const response = await fetch(`${API_BASE}/users/${userId}/auth-url`, {
+          headers: getAuthHeaders()
+        });
         const data = await response.json();
         window.location.href = data.authUrl;
       } catch (error) {
@@ -999,7 +1131,8 @@
 
       try {
         const response = await fetch(`${API_BASE}/users/${userId}/disconnect-gmail`, {
-          method: 'POST'
+          method: 'POST',
+          headers: getAuthHeaders()
         });
 
         if (!response.ok) throw new Error('Failed to disconnect');
@@ -1016,7 +1149,8 @@
 
       try {
         const response = await fetch(`${API_BASE}/users/${userId}`, {
-          method: 'DELETE'
+          method: 'DELETE',
+          headers: getAuthHeaders()
         });
 
         if (!response.ok) throw new Error('Failed to delete');
@@ -1039,7 +1173,9 @@
       }
 
       try {
-        const response = await fetch(`${API_BASE}/templates?userId=${userId}`);
+        const response = await fetch(`${API_BASE}/templates?userId=${userId}`, {
+          headers: getAuthHeaders()
+        });
         const data = await response.json();
         currentTemplates = data.templates || [];
 
@@ -1081,7 +1217,9 @@
       const user = allUsers.find(u => u.id === userId);
 
       try {
-        const response = await fetch(`${API_BASE}/templates/default/${type}?senderName=${encodeURIComponent(user?.name || 'The Team')}`);
+        const response = await fetch(`${API_BASE}/templates/default/${type}?senderName=${encodeURIComponent(user?.name || 'The Team')}`, {
+          headers: getAuthHeaders()
+        });
         const data = await response.json();
 
         currentTemplateId = null;
@@ -1128,7 +1266,7 @@
           // Update existing
           const response = await fetch(`${API_BASE}/templates/${currentTemplateId}`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
             body: JSON.stringify({ subject, htmlBody, textBody })
           });
 
@@ -1136,7 +1274,8 @@
         } else {
           // Reset creates the template
           const response = await fetch(`${API_BASE}/templates/reset/${userId}/${currentTemplateType}`, {
-            method: 'POST'
+            method: 'POST',
+            headers: getAuthHeaders()
           });
 
           if (!response.ok) throw new Error('Failed to save');
@@ -1145,7 +1284,7 @@
           const data = await response.json();
           await fetch(`${API_BASE}/templates/${data.template.id}`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
             body: JSON.stringify({ subject, htmlBody, textBody })
           });
         }
@@ -1165,7 +1304,8 @@
 
       try {
         const response = await fetch(`${API_BASE}/templates/reset/${userId}/${currentTemplateType}`, {
-          method: 'POST'
+          method: 'POST',
+          headers: getAuthHeaders()
         });
 
         if (!response.ok) throw new Error('Failed to reset');

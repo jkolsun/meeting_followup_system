@@ -178,6 +178,45 @@
       gap: 12px;
     }
 
+    .user-menu {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding-left: 16px;
+      border-left: 1px solid #e8ecef;
+    }
+
+    .user-name {
+      font-size: 14px;
+      font-weight: 500;
+      color: #374151;
+    }
+
+    .logout-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 12px;
+      border: 1px solid #e8ecef;
+      border-radius: 8px;
+      background: white;
+      color: #6b7280;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .logout-btn:hover {
+      background: #f9fafb;
+      color: #ef4444;
+      border-color: #fca5a5;
+    }
+
+    .logout-btn svg {
+      width: 16px;
+      height: 16px;
+    }
+
     .refresh-btn {
       display: flex;
       align-items: center;
@@ -780,6 +819,14 @@
         </svg>
         Settings
       </a>
+      <a href="/integrations.html" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+          <polyline points="15 3 21 3 21 9"></polyline>
+          <line x1="10" y1="14" x2="21" y2="3"></line>
+        </svg>
+        Integrations
+      </a>
     </nav>
 
     <div class="sidebar-stats">
@@ -817,6 +864,17 @@
           </svg>
           Refresh
         </button>
+        <div class="user-menu" id="user-menu" style="display: none;">
+          <span class="user-name" id="user-name"></span>
+          <button class="logout-btn" onclick="logout()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+              <polyline points="16 17 21 12 16 7"></polyline>
+              <line x1="21" y1="12" x2="9" y2="12"></line>
+            </svg>
+            Logout
+          </button>
+        </div>
       </div>
     </div>
 
@@ -941,6 +999,7 @@
   <!-- Toast -->
   <div class="toast" id="toast"></div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     const API_BASE = '/api';
     let allMeetings = [];
@@ -948,9 +1007,13 @@
     let allActivity = [];
     let currentFilter = 'all';
     let currentUserFilter = '';
+    let supabaseClient = null;
+    let currentUser = null;
+    let authToken = null;
 
     // Initialize
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', async () => {
+      await initAuth();
       setMinDate();
       loadUsers();
       loadMeetings();
@@ -959,9 +1022,77 @@
       setupFilters();
     });
 
+    async function initAuth() {
+      try {
+        // Check if auth is enabled
+        const configResponse = await fetch(`${API_BASE}/auth/config`);
+        const config = await configResponse.json();
+
+        if (!config.enabled) {
+          // Auth disabled - demo mode
+          return;
+        }
+
+        // Initialize Supabase client
+        supabaseClient = window.supabase.createClient(config.url, config.anonKey);
+
+        // Check for existing session
+        const { data: { session } } = await supabaseClient.auth.getSession();
+
+        if (session) {
+          currentUser = session.user;
+          authToken = session.access_token;
+          updateUserMenu();
+        } else {
+          // No session - redirect to login
+          window.location.href = '/login.html';
+          return;
+        }
+
+        // Listen for auth changes
+        supabaseClient.auth.onAuthStateChange((event, session) => {
+          if (event === 'SIGNED_OUT' || !session) {
+            window.location.href = '/login.html';
+          } else if (session) {
+            currentUser = session.user;
+            authToken = session.access_token;
+            updateUserMenu();
+          }
+        });
+      } catch (error) {
+        console.log('Auth not configured, running in demo mode');
+      }
+    }
+
+    function updateUserMenu() {
+      const userMenu = document.getElementById('user-menu');
+      const userName = document.getElementById('user-name');
+
+      if (currentUser) {
+        userMenu.style.display = 'flex';
+        userName.textContent = currentUser.email;
+      }
+    }
+
+    async function logout() {
+      if (supabaseClient) {
+        await supabaseClient.auth.signOut();
+      }
+      window.location.href = '/login.html';
+    }
+
+    function getAuthHeaders() {
+      if (authToken) {
+        return { 'Authorization': `Bearer ${authToken}` };
+      }
+      return {};
+    }
+
     async function loadUsers() {
       try {
-        const response = await fetch(`${API_BASE}/users?active=true`);
+        const response = await fetch(`${API_BASE}/users?active=true`, {
+          headers: getAuthHeaders()
+        });
         const data = await response.json();
         allUsers = data.users || [];
         populateUserDropdown();
@@ -1027,7 +1158,9 @@
 
     async function loadMeetings() {
       try {
-        const response = await fetch(`${API_BASE}/meetings`);
+        const response = await fetch(`${API_BASE}/meetings`, {
+          headers: getAuthHeaders()
+        });
         const data = await response.json();
         allMeetings = data.meetings || [];
         updateStats();
@@ -1151,7 +1284,7 @@
       try {
         const response = await fetch(`${API_BASE}/meetings`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
           body: JSON.stringify(data)
         });
 
@@ -1179,7 +1312,8 @@
 
       try {
         const response = await fetch(`${API_BASE}/meetings/${id}/cancel`, {
-          method: 'POST'
+          method: 'POST',
+          headers: getAuthHeaders()
         });
 
         if (!response.ok) throw new Error('Failed to cancel');
@@ -1193,7 +1327,9 @@
 
     async function loadActivity() {
       try {
-        const response = await fetch(`${API_BASE}/activity?limit=30`);
+        const response = await fetch(`${API_BASE}/activity?limit=30`, {
+          headers: getAuthHeaders()
+        });
         const data = await response.json();
         allActivity = data.activity || [];
         renderActivity();

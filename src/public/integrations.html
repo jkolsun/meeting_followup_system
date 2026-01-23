@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Integrations | Bright Automations</title>
+  <link rel="icon" type="image/png" href="/logo.png">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f8fafb;
+      color: #1a1a2e;
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      position: fixed;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 260px;
+      background: #fff;
+      border-right: 1px solid #e8ecef;
+      display: flex;
+      flex-direction: column;
+      z-index: 100;
+    }
+
+    .sidebar-header {
+      padding: 24px;
+      border-bottom: 1px solid #e8ecef;
+    }
+
+    .sidebar-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .sidebar-logo img {
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+    }
+
+    .sidebar-logo-text {
+      font-weight: 700;
+      font-size: 15px;
+      color: #1a1a2e;
+      line-height: 1.3;
+    }
+
+    .sidebar-logo-text span {
+      display: block;
+      font-weight: 400;
+      font-size: 12px;
+      color: #6b7280;
+    }
+
+    .sidebar-nav {
+      padding: 16px 12px;
+      flex: 1;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      border-radius: 10px;
+      color: #4b5563;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.2s;
+      margin-bottom: 4px;
+    }
+
+    .nav-item:hover {
+      background: #f3f4f6;
+      color: #1a1a2e;
+    }
+
+    .nav-item.active {
+      background: linear-gradient(135deg, #4A8B8B 0%, #3d7575 100%);
+      color: white;
+    }
+
+    .nav-item svg {
+      width: 20px;
+      height: 20px;
+      opacity: 0.7;
+    }
+
+    .nav-item.active svg {
+      opacity: 1;
+    }
+
+    .main-content {
+      margin-left: 260px;
+      min-height: 100vh;
+    }
+
+    .top-bar {
+      background: white;
+      border-bottom: 1px solid #e8ecef;
+      padding: 16px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .page-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: #1a1a2e;
+    }
+
+    .top-bar-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .user-menu {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding-left: 16px;
+      border-left: 1px solid #e8ecef;
+    }
+
+    .user-name {
+      font-size: 14px;
+      font-weight: 500;
+      color: #374151;
+    }
+
+    .logout-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 12px;
+      border: 1px solid #e8ecef;
+      border-radius: 8px;
+      background: white;
+      color: #6b7280;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .logout-btn:hover {
+      background: #f9fafb;
+      color: #ef4444;
+      border-color: #fca5a5;
+    }
+
+    .logout-btn svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .content-area {
+      padding: 32px;
+      max-width: 900px;
+    }
+
+    .section-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #6b7280;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 16px;
+    }
+
+    .integration-grid {
+      display: grid;
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+
+    .integration-card {
+      background: white;
+      border: 1px solid #e8ecef;
+      border-radius: 16px;
+      padding: 24px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      transition: all 0.2s;
+    }
+
+    .integration-card:hover {
+      border-color: #d1d5db;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    .integration-card.connected {
+      border-color: #10b981;
+      background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+    }
+
+    .integration-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f3f4f6;
+      flex-shrink: 0;
+    }
+
+    .integration-icon svg {
+      width: 32px;
+      height: 32px;
+    }
+
+    .integration-icon.gmail {
+      background: #fef2f2;
+    }
+
+    .integration-icon.calendar {
+      background: #eff6ff;
+    }
+
+    .integration-icon.hubspot {
+      background: #fff7ed;
+    }
+
+    .integration-icon.salesforce {
+      background: #f0f9ff;
+    }
+
+    .integration-info {
+      flex: 1;
+    }
+
+    .integration-name {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1a1a2e;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .integration-desc {
+      font-size: 14px;
+      color: #6b7280;
+    }
+
+    .integration-status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      margin-top: 8px;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .status-dot.connected {
+      background: #10b981;
+    }
+
+    .status-dot.disconnected {
+      background: #9ca3af;
+    }
+
+    .integration-action {
+      flex-shrink: 0;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #4A8B8B 0%, #3d7575 100%);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(74, 139, 139, 0.3);
+    }
+
+    .btn-secondary {
+      background: #f3f4f6;
+      color: #374151;
+    }
+
+    .btn-secondary:hover {
+      background: #e5e7eb;
+    }
+
+    .btn-danger {
+      background: #fef2f2;
+      color: #dc2626;
+    }
+
+    .btn-danger:hover {
+      background: #fee2e2;
+    }
+
+    .coming-soon-badge {
+      background: #f3f4f6;
+      color: #6b7280;
+      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-weight: 500;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      padding: 16px 24px;
+      border-radius: 12px;
+      color: white;
+      font-weight: 500;
+      font-size: 14px;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s;
+      z-index: 1000;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .toast.success {
+      background: #10b981;
+    }
+
+    .toast.error {
+      background: #ef4444;
+    }
+
+    .info-box {
+      background: #f0f9ff;
+      border: 1px solid #bae6fd;
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin-bottom: 24px;
+      display: flex;
+      gap: 12px;
+    }
+
+    .info-box svg {
+      width: 20px;
+      height: 20px;
+      color: #0284c7;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .info-box-content {
+      flex: 1;
+    }
+
+    .info-box-title {
+      font-weight: 600;
+      color: #0369a1;
+      margin-bottom: 4px;
+    }
+
+    .info-box-text {
+      font-size: 14px;
+      color: #0c4a6e;
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        transform: translateX(-100%);
+      }
+      .main-content {
+        margin-left: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <a href="/" class="sidebar-logo">
+        <img src="/logo.png" alt="Bright Automations">
+        <div class="sidebar-logo-text">
+          Bright Automations
+          <span>Meeting Follow-up</span>
+        </div>
+      </a>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a href="/" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+          <line x1="16" y1="2" x2="16" y2="6"></line>
+          <line x1="8" y1="2" x2="8" y2="6"></line>
+          <line x1="3" y1="10" x2="21" y2="10"></line>
+        </svg>
+        Dashboard
+      </a>
+      <a href="/settings.html" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+        </svg>
+        Settings
+      </a>
+      <a href="/integrations.html" class="nav-item active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+          <polyline points="15 3 21 3 21 9"></polyline>
+          <line x1="10" y1="14" x2="21" y2="3"></line>
+        </svg>
+        Integrations
+      </a>
+    </nav>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <div class="top-bar">
+      <h1 class="page-title">Integrations</h1>
+      <div class="top-bar-actions">
+        <div class="user-menu" id="user-menu" style="display: none;">
+          <span class="user-name" id="user-name"></span>
+          <button class="logout-btn" onclick="logout()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+              <polyline points="16 17 21 12 16 7"></polyline>
+              <line x1="21" y1="12" x2="9" y2="12"></line>
+            </svg>
+            Logout
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="content-area">
+      <div class="info-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="16" x2="12" y2="12"></line>
+          <line x1="12" y1="8" x2="12.01" y2="8"></line>
+        </svg>
+        <div class="info-box-content">
+          <div class="info-box-title">Connect your tools</div>
+          <div class="info-box-text">Integrate with your favorite services to streamline your meeting workflow. Gmail is required for sending emails.</div>
+        </div>
+      </div>
+
+      <div class="section-title">Email & Calendar</div>
+      <div class="integration-grid">
+        <div class="integration-card" id="gmail-card">
+          <div class="integration-icon gmail">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke="#EA4335" stroke-width="2"/>
+              <polyline points="22,6 12,13 2,6" stroke="#EA4335" stroke-width="2"/>
+            </svg>
+          </div>
+          <div class="integration-info">
+            <div class="integration-name">Gmail</div>
+            <div class="integration-desc">Send meeting confirmations and reminders from your Gmail account</div>
+            <div class="integration-status" id="gmail-status">
+              <span class="status-dot disconnected"></span>
+              <span>Not connected</span>
+            </div>
+          </div>
+          <div class="integration-action" id="gmail-action">
+            <button class="btn btn-primary" onclick="connectGmail()">Connect</button>
+          </div>
+        </div>
+
+        <div class="integration-card" id="calendar-card">
+          <div class="integration-icon calendar">
+            <svg viewBox="0 0 24 24" fill="none">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2" stroke="#4285F4" stroke-width="2"/>
+              <line x1="16" y1="2" x2="16" y2="6" stroke="#4285F4" stroke-width="2"/>
+              <line x1="8" y1="2" x2="8" y2="6" stroke="#4285F4" stroke-width="2"/>
+              <line x1="3" y1="10" x2="21" y2="10" stroke="#4285F4" stroke-width="2"/>
+            </svg>
+          </div>
+          <div class="integration-info">
+            <div class="integration-name">Google Calendar</div>
+            <div class="integration-desc">Automatically import meetings from your calendar and add confirmed events</div>
+            <div class="integration-status" id="calendar-status">
+              <span class="status-dot disconnected"></span>
+              <span>Not connected</span>
+            </div>
+          </div>
+          <div class="integration-action" id="calendar-action">
+            <button class="btn btn-primary" onclick="connectCalendar()">Connect</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-title">CRM (Coming Soon)</div>
+      <div class="integration-grid">
+        <div class="integration-card" style="opacity: 0.7;">
+          <div class="integration-icon hubspot">
+            <svg viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="10" stroke="#FF7A59" stroke-width="2"/>
+              <path d="M12 6v6l4 2" stroke="#FF7A59" stroke-width="2"/>
+            </svg>
+          </div>
+          <div class="integration-info">
+            <div class="integration-name">
+              HubSpot
+              <span class="coming-soon-badge">Coming Soon</span>
+            </div>
+            <div class="integration-desc">Sync contacts and meetings with your HubSpot CRM</div>
+          </div>
+          <div class="integration-action">
+            <button class="btn btn-secondary" disabled>Coming Soon</button>
+          </div>
+        </div>
+
+        <div class="integration-card" style="opacity: 0.7;">
+          <div class="integration-icon salesforce">
+            <svg viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="8" r="4" stroke="#00A1E0" stroke-width="2"/>
+              <path d="M6 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2" stroke="#00A1E0" stroke-width="2"/>
+            </svg>
+          </div>
+          <div class="integration-info">
+            <div class="integration-name">
+              Salesforce
+              <span class="coming-soon-badge">Coming Soon</span>
+            </div>
+            <div class="integration-desc">Connect to Salesforce to sync leads and meetings</div>
+          </div>
+          <div class="integration-action">
+            <button class="btn btn-secondary" disabled>Coming Soon</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    let supabaseClient = null;
+    let session = null;
+
+    async function init() {
+      try {
+        const response = await fetch('/api/auth/config');
+        const config = await response.json();
+        if (config.enabled && config.url && config.anonKey) {
+          supabaseClient = window.supabase.createClient(config.url, config.anonKey);
+
+          const { data } = await supabaseClient.auth.getSession();
+          if (!data.session) {
+            window.location.href = '/login.html';
+            return;
+          }
+          session = data.session;
+          updateUserMenu();
+
+          supabaseClient.auth.onAuthStateChange((event, newSession) => {
+            if (event === 'SIGNED_OUT' || !newSession) {
+              window.location.href = '/login.html';
+            } else {
+              session = newSession;
+              updateUserMenu();
+            }
+          });
+
+          loadIntegrationStatus();
+        } else {
+          // Demo mode - show mock data
+          loadDemoStatus();
+        }
+      } catch (error) {
+        console.error('Failed to init:', error);
+        loadDemoStatus();
+      }
+    }
+
+    function updateUserMenu() {
+      const userMenu = document.getElementById('user-menu');
+      const userName = document.getElementById('user-name');
+
+      if (session && session.user) {
+        userMenu.style.display = 'flex';
+        userName.textContent = session.user.email;
+      }
+    }
+
+    async function logout() {
+      if (supabaseClient) {
+        await supabaseClient.auth.signOut();
+      }
+      window.location.href = '/login.html';
+    }
+
+    init();
+
+    async function loadIntegrationStatus() {
+      try {
+        // Get organization info
+        const orgResponse = await fetch('/api/organizations/me', {
+          headers: { 'Authorization': `Bearer ${session.access_token}` }
+        });
+        const orgData = await orgResponse.json();
+
+        if (orgData.organization) {
+          // Update calendar status
+          if (orgData.organization.googleCalendarConnected) {
+            updateCalendarConnected();
+          }
+        }
+
+        // Get user info for Gmail status
+        const userResponse = await fetch('/api/users/me', {
+          headers: { 'Authorization': `Bearer ${session.access_token}` }
+        });
+        const userData = await userResponse.json();
+
+        if (userData.user && userData.user.gmailRefreshToken) {
+          updateGmailConnected();
+        }
+      } catch (error) {
+        console.error('Error loading status:', error);
+      }
+    }
+
+    function loadDemoStatus() {
+      // Demo mode - show as not connected
+    }
+
+    function updateGmailConnected() {
+      document.getElementById('gmail-card').classList.add('connected');
+      document.getElementById('gmail-status').innerHTML = `
+        <span class="status-dot connected"></span>
+        <span>Connected</span>
+      `;
+      document.getElementById('gmail-action').innerHTML = `
+        <button class="btn btn-danger" onclick="disconnectGmail()">Disconnect</button>
+      `;
+    }
+
+    function updateCalendarConnected() {
+      document.getElementById('calendar-card').classList.add('connected');
+      document.getElementById('calendar-status').innerHTML = `
+        <span class="status-dot connected"></span>
+        <span>Connected</span>
+      `;
+      document.getElementById('calendar-action').innerHTML = `
+        <button class="btn btn-danger" onclick="disconnectCalendar()">Disconnect</button>
+      `;
+    }
+
+    async function connectGmail() {
+      if (!session) {
+        showToast('Please log in first', 'error');
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/users/me/auth-url', {
+          headers: { 'Authorization': `Bearer ${session.access_token}` }
+        });
+        const data = await response.json();
+        window.location.href = data.authUrl;
+      } catch (error) {
+        showToast('Failed to start Gmail connection', 'error');
+      }
+    }
+
+    async function connectCalendar() {
+      if (!session) {
+        showToast('Please log in first', 'error');
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/organizations/me/calendar-auth-url', {
+          headers: { 'Authorization': `Bearer ${session.access_token}` }
+        });
+        const data = await response.json();
+        window.location.href = data.authUrl;
+      } catch (error) {
+        showToast('Failed to start Google Calendar connection', 'error');
+      }
+    }
+
+    async function disconnectGmail() {
+      if (!confirm('Are you sure you want to disconnect Gmail?')) return;
+      // TODO: Implement disconnect
+      showToast('Gmail disconnected', 'success');
+      location.reload();
+    }
+
+    async function disconnectCalendar() {
+      if (!confirm('Are you sure you want to disconnect Google Calendar?')) return;
+      // TODO: Implement disconnect
+      showToast('Google Calendar disconnected', 'success');
+      location.reload();
+    }
+
+    function showToast(message, type = 'success') {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.className = `toast ${type} show`;
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3000);
+    }
+
+    // Check for OAuth callbacks
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('gmail') === 'connected') {
+      showToast('Gmail connected successfully!', 'success');
+      window.history.replaceState({}, document.title, '/integrations.html');
+    }
+    if (params.get('calendar') === 'connected') {
+      showToast('Google Calendar connected successfully!', 'success');
+      window.history.replaceState({}, document.title, '/integrations.html');
+    }
+    if (params.get('error')) {
+      showToast('Connection failed: ' + params.get('error'), 'error');
+      window.history.replaceState({}, document.title, '/integrations.html');
+    }
+  </script>
+</body>
+</html>

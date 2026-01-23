@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Get Started | Bright Automations</title>
+  <link rel="icon" type="image/png" href="/logo.png">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f8fafb;
+      min-height: 100vh;
+      color: #1a1a2e;
+    }
+
+    .header {
+      background: white;
+      border-bottom: 1px solid #e8ecef;
+      padding: 16px 32px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .header img {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+    }
+
+    .header h1 {
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 60px auto;
+      padding: 0 20px;
+    }
+
+    .progress-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 40px;
+    }
+
+    .progress-step {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 600;
+      background: #e5e7eb;
+      color: #6b7280;
+    }
+
+    .progress-step.active {
+      background: linear-gradient(135deg, #4A8B8B 0%, #3d7575 100%);
+      color: white;
+    }
+
+    .progress-step.completed {
+      background: #10b981;
+      color: white;
+    }
+
+    .progress-step.completed::after {
+      content: '✓';
+    }
+
+    .progress-line {
+      width: 60px;
+      height: 2px;
+      background: #e5e7eb;
+    }
+
+    .progress-line.completed {
+      background: #10b981;
+    }
+
+    .card {
+      background: white;
+      border-radius: 16px;
+      border: 1px solid #e8ecef;
+      padding: 40px;
+    }
+
+    .step-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: #1a1a2e;
+      margin-bottom: 8px;
+    }
+
+    .step-description {
+      color: #6b7280;
+      font-size: 15px;
+      margin-bottom: 32px;
+    }
+
+    .form-group {
+      margin-bottom: 24px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 8px;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 14px 16px;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      font-size: 15px;
+      font-family: inherit;
+      color: #1a1a2e;
+      transition: all 0.2s;
+      background: #f9fafb;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: #4A8B8B;
+      background: white;
+      box-shadow: 0 0 0 4px rgba(74, 139, 139, 0.1);
+    }
+
+    .form-help {
+      font-size: 12px;
+      color: #6b7280;
+      margin-top: 6px;
+    }
+
+    .btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      padding: 14px 24px;
+      border: none;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #4A8B8B 0%, #3d7575 100%);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 20px rgba(74, 139, 139, 0.3);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-secondary {
+      background: #f3f4f6;
+      color: #374151;
+      margin-top: 12px;
+    }
+
+    .btn-secondary:hover {
+      background: #e5e7eb;
+    }
+
+    .integration-card {
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      transition: all 0.2s;
+    }
+
+    .integration-card:hover {
+      border-color: #4A8B8B;
+      background: #f9fafb;
+    }
+
+    .integration-card.connected {
+      border-color: #10b981;
+      background: #f0fdf4;
+    }
+
+    .integration-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f3f4f6;
+    }
+
+    .integration-icon svg {
+      width: 28px;
+      height: 28px;
+    }
+
+    .integration-info {
+      flex: 1;
+    }
+
+    .integration-name {
+      font-weight: 600;
+      color: #1a1a2e;
+      margin-bottom: 2px;
+    }
+
+    .integration-desc {
+      font-size: 13px;
+      color: #6b7280;
+    }
+
+    .integration-action .btn {
+      width: auto;
+      padding: 10px 20px;
+      font-size: 13px;
+    }
+
+    .connected-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #10b981;
+      font-weight: 600;
+      font-size: 13px;
+    }
+
+    .connected-badge svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .step {
+      display: none;
+    }
+
+    .step.active {
+      display: block;
+    }
+
+    .error-message {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #dc2626;
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .error-message.show {
+      display: block;
+    }
+
+    .loading {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .skip-link {
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .skip-link a {
+      color: #6b7280;
+      font-size: 14px;
+      text-decoration: none;
+    }
+
+    .skip-link a:hover {
+      color: #4A8B8B;
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <img src="/logo.png" alt="Bright Automations">
+    <h1>Bright Automations</h1>
+  </header>
+
+  <div class="container">
+    <div class="progress-bar">
+      <div class="progress-step active" id="progress-1">1</div>
+      <div class="progress-line" id="line-1"></div>
+      <div class="progress-step" id="progress-2">2</div>
+      <div class="progress-line" id="line-2"></div>
+      <div class="progress-step" id="progress-3">3</div>
+    </div>
+
+    <div class="card">
+      <!-- Step 1: Organization Setup -->
+      <div class="step active" id="step-1">
+        <h2 class="step-title">Set up your workspace</h2>
+        <p class="step-description">Tell us about your company so we can personalize your experience.</p>
+
+        <div class="error-message" id="error-1"></div>
+
+        <form id="org-form">
+          <div class="form-group">
+            <label class="form-label">Company Name</label>
+            <input type="text" class="form-input" id="companyName" placeholder="Acme Inc." required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Workspace URL</label>
+            <input type="text" class="form-input" id="slug" placeholder="acme" pattern="[a-z0-9-]+" required>
+            <p class="form-help">Only lowercase letters, numbers, and hyphens. This will be your unique workspace identifier.</p>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Your Name</label>
+            <input type="text" class="form-input" id="userName" placeholder="John Doe" required>
+          </div>
+
+          <button type="submit" class="btn btn-primary" id="step-1-btn">
+            <span class="btn-text">Continue</span>
+          </button>
+        </form>
+      </div>
+
+      <!-- Step 2: Connect Gmail -->
+      <div class="step" id="step-2">
+        <h2 class="step-title">Connect your email</h2>
+        <p class="step-description">Connect Gmail to send meeting confirmations and reminders from your email address.</p>
+
+        <div class="error-message" id="error-2"></div>
+
+        <div class="integration-card" id="gmail-card">
+          <div class="integration-icon">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke="#EA4335" stroke-width="2"/>
+              <polyline points="22,6 12,13 2,6" stroke="#EA4335" stroke-width="2"/>
+            </svg>
+          </div>
+          <div class="integration-info">
+            <div class="integration-name">Gmail</div>
+            <div class="integration-desc">Send emails from your Gmail account</div>
+          </div>
+          <div class="integration-action" id="gmail-action">
+            <button class="btn btn-primary" onclick="connectGmail()">Connect</button>
+          </div>
+        </div>
+
+        <button class="btn btn-primary" id="step-2-btn" onclick="goToStep(3)" disabled>
+          <span class="btn-text">Continue</span>
+        </button>
+
+        <div class="skip-link">
+          <a href="#" onclick="goToStep(3); return false;">Skip for now</a>
+        </div>
+      </div>
+
+      <!-- Step 3: Connect Calendar (Optional) -->
+      <div class="step" id="step-3">
+        <h2 class="step-title">Connect Google Calendar</h2>
+        <p class="step-description">Optionally sync your calendar to automatically import meetings.</p>
+
+        <div class="error-message" id="error-3"></div>
+
+        <div class="integration-card" id="calendar-card">
+          <div class="integration-icon">
+            <svg viewBox="0 0 24 24" fill="none">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2" stroke="#4285F4" stroke-width="2"/>
+              <line x1="16" y1="2" x2="16" y2="6" stroke="#4285F4" stroke-width="2"/>
+              <line x1="8" y1="2" x2="8" y2="6" stroke="#4285F4" stroke-width="2"/>
+              <line x1="3" y1="10" x2="21" y2="10" stroke="#4285F4" stroke-width="2"/>
+            </svg>
+          </div>
+          <div class="integration-info">
+            <div class="integration-name">Google Calendar</div>
+            <div class="integration-desc">Auto-import meetings from your calendar</div>
+          </div>
+          <div class="integration-action" id="calendar-action">
+            <button class="btn btn-primary" onclick="connectCalendar()">Connect</button>
+          </div>
+        </div>
+
+        <button class="btn btn-primary" onclick="finishOnboarding()">
+          <span class="btn-text">Go to Dashboard</span>
+        </button>
+
+        <div class="skip-link">
+          <a href="#" onclick="finishOnboarding(); return false;">Skip and go to dashboard</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    let supabase = null;
+    let currentStep = 1;
+    let session = null;
+    let organizationId = null;
+
+    async function initSupabase() {
+      try {
+        const response = await fetch('/api/auth/config');
+        const config = await response.json();
+        if (config.supabaseUrl && config.supabaseAnonKey) {
+          supabase = window.supabase.createClient(config.supabaseUrl, config.supabaseAnonKey);
+
+          // Check if logged in
+          const { data } = await supabase.auth.getSession();
+          if (!data.session) {
+            window.location.href = '/login.html';
+            return;
+          }
+          session = data.session;
+
+          // Pre-fill from user metadata
+          const meta = session.user.user_metadata || {};
+          if (meta.company_name) {
+            document.getElementById('companyName').value = meta.company_name;
+            document.getElementById('slug').value = meta.company_name.toLowerCase().replace(/[^a-z0-9]/g, '-');
+          }
+          if (meta.first_name || meta.last_name) {
+            document.getElementById('userName').value = `${meta.first_name || ''} ${meta.last_name || ''}`.trim();
+          }
+
+          // Check if already has org
+          const orgResponse = await fetch('/api/auth/check-org', {
+            headers: { 'Authorization': `Bearer ${session.access_token}` }
+          });
+          const orgData = await orgResponse.json();
+          if (orgData.hasOrganization) {
+            window.location.href = '/';
+          }
+        }
+      } catch (error) {
+        console.error('Failed to init:', error);
+      }
+    }
+
+    initSupabase();
+
+    function showError(step, message) {
+      const el = document.getElementById(`error-${step}`);
+      el.textContent = message;
+      el.classList.add('show');
+    }
+
+    function hideError(step) {
+      document.getElementById(`error-${step}`).classList.remove('show');
+    }
+
+    function goToStep(step) {
+      document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+      document.getElementById(`step-${step}`).classList.add('active');
+
+      for (let i = 1; i <= 3; i++) {
+        const progressEl = document.getElementById(`progress-${i}`);
+        const lineEl = document.getElementById(`line-${i}`);
+
+        if (i < step) {
+          progressEl.classList.add('completed');
+          progressEl.classList.remove('active');
+          if (lineEl) lineEl.classList.add('completed');
+        } else if (i === step) {
+          progressEl.classList.add('active');
+          progressEl.classList.remove('completed');
+        } else {
+          progressEl.classList.remove('active', 'completed');
+          if (lineEl) lineEl.classList.remove('completed');
+        }
+      }
+
+      currentStep = step;
+    }
+
+    // Step 1: Create organization
+    document.getElementById('org-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      hideError(1);
+
+      const btn = document.getElementById('step-1-btn');
+      const btnText = btn.querySelector('.btn-text');
+      btn.disabled = true;
+      btnText.innerHTML = '<span class="loading"></span>';
+
+      try {
+        const response = await fetch('/api/organizations', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`
+          },
+          body: JSON.stringify({
+            name: document.getElementById('companyName').value,
+            slug: document.getElementById('slug').value,
+            userName: document.getElementById('userName').value
+          })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to create organization');
+        }
+
+        organizationId = data.organization.id;
+        goToStep(2);
+      } catch (error) {
+        showError(1, error.message);
+        btn.disabled = false;
+        btnText.textContent = 'Continue';
+      }
+    });
+
+    // Auto-generate slug from company name
+    document.getElementById('companyName').addEventListener('input', (e) => {
+      const slug = e.target.value.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-');
+      document.getElementById('slug').value = slug;
+    });
+
+    // Connect Gmail
+    async function connectGmail() {
+      try {
+        const response = await fetch('/api/users/me/auth-url', {
+          headers: { 'Authorization': `Bearer ${session.access_token}` }
+        });
+        const data = await response.json();
+
+        // Store that we're in onboarding
+        sessionStorage.setItem('onboarding_step', '2');
+        window.location.href = data.authUrl;
+      } catch (error) {
+        showError(2, 'Failed to start Gmail connection');
+      }
+    }
+
+    // Connect Google Calendar
+    async function connectCalendar() {
+      try {
+        const response = await fetch('/api/organizations/me/calendar-auth-url', {
+          headers: { 'Authorization': `Bearer ${session.access_token}` }
+        });
+        const data = await response.json();
+
+        sessionStorage.setItem('onboarding_step', '3');
+        window.location.href = data.authUrl;
+      } catch (error) {
+        showError(3, 'Failed to start Google Calendar connection');
+      }
+    }
+
+    // Finish onboarding
+    function finishOnboarding() {
+      window.location.href = '/';
+    }
+
+    // Check for OAuth callbacks
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('gmail') === 'connected') {
+      const savedStep = sessionStorage.getItem('onboarding_step');
+      if (savedStep === '2') {
+        setTimeout(() => goToStep(2), 100);
+        document.getElementById('gmail-card').classList.add('connected');
+        document.getElementById('gmail-action').innerHTML = `
+          <div class="connected-badge">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            Connected
+          </div>
+        `;
+        document.getElementById('step-2-btn').disabled = false;
+      }
+      sessionStorage.removeItem('onboarding_step');
+      window.history.replaceState({}, document.title, '/onboarding.html');
+    }
+
+    if (params.get('calendar') === 'connected') {
+      const savedStep = sessionStorage.getItem('onboarding_step');
+      if (savedStep === '3') {
+        setTimeout(() => goToStep(3), 100);
+        document.getElementById('calendar-card').classList.add('connected');
+        document.getElementById('calendar-action').innerHTML = `
+          <div class="connected-badge">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            Connected
+          </div>
+        `;
+      }
+      sessionStorage.removeItem('onboarding_step');
+      window.history.replaceState({}, document.title, '/onboarding.html');
+    }
+  </script>
+</body>
+</html>

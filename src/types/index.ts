@@ -1,5 +1,24 @@
+export type PlanType = 'free' | 'starter' | 'pro' | 'business';
+
+export interface Organization {
+  id: string;
+  name: string;
+  slug: string;
+  logoUrl: string | null;
+  primaryColor: string;
+  ownerAuthId: string;
+  googleCalendarConnected: boolean;
+  googleCalendarRefreshToken: string | null;
+  stripeCustomerId: string | null;
+  stripeSubscriptionId: string | null;
+  plan: PlanType;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export interface Meeting {
   id: string;
+  organizationId: string | null;
   clientName: string;
   clientEmail: string;
   meetingTitle: string;
@@ -8,14 +27,20 @@ export interface Meeting {
   cancelledAt: Date | null;
   confirmationToken: string;
   assignedUserId: string | null;
+  googleCalendarEventId: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
 
+export type UserRole = 'owner' | 'admin' | 'member';
+
 export interface User {
   id: string;
+  organizationId: string | null;
+  authId: string | null;
   name: string;
   email: string;
+  role: UserRole;
   gmailRefreshToken: string | null;
   isActive: boolean;
   createdAt: Date;
