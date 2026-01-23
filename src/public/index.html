@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Meeting Follow-up System | Bright Automations</title>
   <link rel="icon" type="image/png" href="/logo.png">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     * {
       margin: 0;
@@ -13,110 +14,303 @@
     }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-      background: #f5f7fa;
-      color: #333;
-      line-height: 1.6;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f8fafb;
+      color: #1a1a2e;
+      line-height: 1.5;
+      min-height: 100vh;
     }
 
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 20px;
+    /* Sidebar */
+    .sidebar {
+      position: fixed;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 260px;
+      background: #fff;
+      border-right: 1px solid #e8ecef;
+      display: flex;
+      flex-direction: column;
+      z-index: 100;
     }
 
-    header {
+    .sidebar-header {
+      padding: 24px;
+      border-bottom: 1px solid #e8ecef;
+    }
+
+    .sidebar-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .sidebar-logo img {
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+    }
+
+    .sidebar-logo-text {
+      font-weight: 700;
+      font-size: 15px;
+      color: #1a1a2e;
+      line-height: 1.3;
+    }
+
+    .sidebar-logo-text span {
+      display: block;
+      font-weight: 400;
+      font-size: 12px;
+      color: #6b7280;
+    }
+
+    .sidebar-nav {
+      padding: 16px 12px;
+      flex: 1;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      border-radius: 10px;
+      color: #4b5563;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.2s;
+      margin-bottom: 4px;
+    }
+
+    .nav-item:hover {
+      background: #f3f4f6;
+      color: #1a1a2e;
+    }
+
+    .nav-item.active {
       background: linear-gradient(135deg, #4A8B8B 0%, #3d7575 100%);
       color: white;
-      padding: 20px 0;
-      margin-bottom: 30px;
     }
 
-    header .container {
+    .nav-item svg {
+      width: 20px;
+      height: 20px;
+      opacity: 0.7;
+    }
+
+    .nav-item.active svg {
+      opacity: 1;
+    }
+
+    .sidebar-stats {
+      padding: 20px;
+      border-top: 1px solid #e8ecef;
+      background: #f9fafb;
+    }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .stat-item {
+      background: white;
+      padding: 14px;
+      border-radius: 10px;
+      border: 1px solid #e8ecef;
+    }
+
+    .stat-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: #1a1a2e;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: #6b7280;
+      margin-top: 2px;
+    }
+
+    .stat-item.highlight {
+      background: linear-gradient(135deg, #4A8B8B 0%, #3d7575 100%);
+      border: none;
+    }
+
+    .stat-item.highlight .stat-value,
+    .stat-item.highlight .stat-label {
+      color: white;
+    }
+
+    /* Main Content */
+    .main-content {
+      margin-left: 260px;
+      min-height: 100vh;
+    }
+
+    .top-bar {
+      background: white;
+      border-bottom: 1px solid #e8ecef;
+      padding: 16px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .page-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: #1a1a2e;
+    }
+
+    .top-bar-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .refresh-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      border: 1px solid #e8ecef;
+      border-radius: 8px;
+      background: white;
+      color: #4b5563;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .refresh-btn:hover {
+      background: #f9fafb;
+      border-color: #d1d5db;
+    }
+
+    .refresh-btn svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .content-area {
+      padding: 32px;
+    }
+
+    .content-grid {
+      display: grid;
+      grid-template-columns: 400px 1fr;
+      gap: 32px;
+    }
+
+    @media (max-width: 1200px) {
+      .content-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        transform: translateX(-100%);
+      }
+      .main-content {
+        margin-left: 0;
+      }
+    }
+
+    /* Cards */
+    .card {
+      background: white;
+      border-radius: 16px;
+      border: 1px solid #e8ecef;
+      overflow: hidden;
+    }
+
+    .card-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid #e8ecef;
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
 
-    header h1 {
-      font-size: 24px;
+    .card-title {
+      font-size: 16px;
       font-weight: 600;
-    }
-
-    .stats {
-      display: flex;
-      gap: 20px;
-    }
-
-    .stat {
-      background: rgba(255,255,255,0.2);
-      padding: 8px 16px;
-      border-radius: 20px;
-      font-size: 14px;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: 350px 1fr 350px;
-      gap: 24px;
-    }
-
-    @media (max-width: 1200px) {
-      .grid {
-        grid-template-columns: 350px 1fr;
-      }
-      .activity-card {
-        grid-column: 1 / -1;
-      }
-    }
-
-    @media (max-width: 800px) {
-      .grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .card {
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-      padding: 24px;
-    }
-
-    .card h2 {
-      font-size: 18px;
-      margin-bottom: 20px;
-      color: #444;
+      color: #1a1a2e;
       display: flex;
       align-items: center;
       gap: 10px;
     }
 
+    .card-title svg {
+      width: 20px;
+      height: 20px;
+      color: #4A8B8B;
+    }
+
+    .card-body {
+      padding: 24px;
+    }
+
+    .card-body-flush {
+      padding: 0;
+    }
+
+    /* Form Styles */
     .form-group {
-      margin-bottom: 16px;
+      margin-bottom: 20px;
     }
 
-    .form-group label {
+    .form-group:last-child {
+      margin-bottom: 0;
+    }
+
+    .form-label {
       display: block;
-      font-size: 14px;
-      font-weight: 500;
-      margin-bottom: 6px;
-      color: #555;
+      font-size: 13px;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 8px;
     }
 
-    .form-group input {
+    .form-input {
       width: 100%;
-      padding: 12px 14px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      font-size: 15px;
-      transition: border-color 0.2s, box-shadow 0.2s;
+      padding: 12px 16px;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      font-size: 14px;
+      font-family: inherit;
+      color: #1a1a2e;
+      transition: all 0.2s;
+      background: #f9fafb;
     }
 
-    .form-group input:focus {
+    .form-input:focus {
       outline: none;
       border-color: #4A8B8B;
-      box-shadow: 0 0 0 3px rgba(74, 139, 139, 0.1);
+      background: white;
+      box-shadow: 0 0 0 4px rgba(74, 139, 139, 0.1);
+    }
+
+    .form-input::placeholder {
+      color: #9ca3af;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
     }
 
     .btn {
@@ -126,44 +320,112 @@
       gap: 8px;
       padding: 12px 24px;
       border: none;
-      border-radius: 8px;
-      font-size: 15px;
-      font-weight: 500;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: inherit;
       cursor: pointer;
       transition: all 0.2s;
+      text-decoration: none;
     }
 
     .btn-primary {
       background: linear-gradient(135deg, #4A8B8B 0%, #3d7575 100%);
       color: white;
       width: 100%;
+      padding: 14px 24px;
     }
 
     .btn-primary:hover {
       transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(74, 139, 139, 0.4);
+      box-shadow: 0 8px 20px rgba(74, 139, 139, 0.3);
     }
 
     .btn-primary:disabled {
       opacity: 0.6;
       cursor: not-allowed;
       transform: none;
+      box-shadow: none;
     }
 
-    .btn-small {
-      padding: 6px 12px;
+    .btn-sm {
+      padding: 8px 14px;
       font-size: 13px;
+      border-radius: 8px;
     }
 
-    .btn-cancel {
-      background: #dc3545;
+    .btn-outline {
+      background: white;
+      border: 1px solid #e5e7eb;
+      color: #374151;
+    }
+
+    .btn-outline:hover {
+      background: #f9fafb;
+      border-color: #d1d5db;
+    }
+
+    .btn-success {
+      background: #10b981;
       color: white;
     }
 
-    .btn-cancel:hover {
-      background: #c82333;
+    .btn-success:hover {
+      background: #059669;
     }
 
+    .btn-danger {
+      background: #ef4444;
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #dc2626;
+    }
+
+    .btn-calendar {
+      background: #3b82f6;
+      color: white;
+    }
+
+    .btn-calendar:hover {
+      background: #2563eb;
+    }
+
+    /* Filter Tabs */
+    .filter-tabs {
+      display: flex;
+      gap: 8px;
+      padding: 4px;
+      background: #f3f4f6;
+      border-radius: 10px;
+      width: fit-content;
+    }
+
+    .filter-tab {
+      padding: 8px 16px;
+      border: none;
+      background: transparent;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      color: #6b7280;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+
+    .filter-tab:hover {
+      color: #374151;
+    }
+
+    .filter-tab.active {
+      background: white;
+      color: #1a1a2e;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    }
+
+    /* Meeting List */
     .meeting-list {
       max-height: 600px;
       overflow-y: auto;
@@ -171,98 +433,274 @@
 
     .meeting-item {
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      padding: 16px;
-      border: 1px solid #eee;
-      border-radius: 10px;
-      margin-bottom: 12px;
-      transition: box-shadow 0.2s;
+      gap: 16px;
+      padding: 20px 24px;
+      border-bottom: 1px solid #f3f4f6;
+      transition: background 0.2s;
+    }
+
+    .meeting-item:last-child {
+      border-bottom: none;
     }
 
     .meeting-item:hover {
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      background: #f9fafb;
+    }
+
+    .meeting-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #4A8B8B 0%, #3d7575 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 600;
+      font-size: 16px;
+      flex-shrink: 0;
     }
 
     .meeting-info {
       flex: 1;
+      min-width: 0;
     }
 
     .meeting-title {
       font-weight: 600;
-      font-size: 16px;
+      font-size: 14px;
+      color: #1a1a2e;
       margin-bottom: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .meeting-client {
-      color: #666;
-      font-size: 14px;
+      font-size: 13px;
+      color: #6b7280;
+      margin-bottom: 4px;
     }
 
-    .meeting-time {
-      color: #888;
-      font-size: 13px;
-      margin-top: 4px;
+    .meeting-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 12px;
+      color: #9ca3af;
+    }
+
+    .meeting-meta-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .meeting-meta-item svg {
+      width: 14px;
+      height: 14px;
     }
 
     .meeting-status {
-      margin-right: 16px;
+      flex-shrink: 0;
     }
 
     .status-badge {
-      display: inline-block;
-      padding: 4px 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
       border-radius: 20px;
       font-size: 12px;
       font-weight: 500;
-      text-transform: uppercase;
+    }
+
+    .status-badge::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
     }
 
     .status-pending {
-      background: #fff3cd;
-      color: #856404;
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .status-pending::before {
+      background: #f59e0b;
     }
 
     .status-confirmed {
-      background: #d4edda;
-      color: #155724;
+      background: #d1fae5;
+      color: #065f46;
     }
 
-    .status-cancelled {
-      background: #f8d7da;
-      color: #721c24;
+    .status-confirmed::before {
+      background: #10b981;
     }
 
     .meeting-actions {
       display: flex;
       gap: 8px;
+      flex-shrink: 0;
     }
 
+    /* Activity List */
+    .activity-list {
+      max-height: 500px;
+      overflow-y: auto;
+    }
+
+    .activity-item {
+      display: flex;
+      gap: 14px;
+      padding: 16px 24px;
+      border-bottom: 1px solid #f3f4f6;
+      transition: background 0.2s;
+    }
+
+    .activity-item:last-child {
+      border-bottom: none;
+    }
+
+    .activity-item:hover {
+      background: #f9fafb;
+    }
+
+    .activity-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .activity-icon svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .activity-icon.reminder {
+      background: #dbeafe;
+      color: #2563eb;
+    }
+
+    .activity-icon.confirmation {
+      background: #d1fae5;
+      color: #059669;
+    }
+
+    .activity-icon.cancellation {
+      background: #fee2e2;
+      color: #dc2626;
+    }
+
+    .activity-icon.failed {
+      background: #fee2e2;
+      color: #dc2626;
+    }
+
+    .activity-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .activity-title {
+      font-size: 13px;
+      font-weight: 500;
+      color: #1a1a2e;
+      margin-bottom: 2px;
+    }
+
+    .activity-subtitle {
+      font-size: 12px;
+      color: #6b7280;
+    }
+
+    .activity-time {
+      font-size: 12px;
+      color: #9ca3af;
+      flex-shrink: 0;
+    }
+
+    .activity-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+      color: #4A8B8B;
+      text-decoration: none;
+      margin-top: 6px;
+    }
+
+    .activity-link:hover {
+      text-decoration: underline;
+    }
+
+    .activity-link svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    /* Empty State */
     .empty-state {
       text-align: center;
-      padding: 40px;
-      color: #888;
+      padding: 60px 24px;
+      color: #9ca3af;
     }
 
     .empty-state svg {
       width: 64px;
       height: 64px;
       margin-bottom: 16px;
-      opacity: 0.5;
+      opacity: 0.4;
     }
 
+    .empty-state p {
+      font-size: 14px;
+    }
+
+    /* User Filter */
+    .user-filter {
+      padding: 0 24px 16px;
+    }
+
+    .user-filter select {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      font-size: 13px;
+      font-family: inherit;
+      color: #374151;
+      background: white;
+      cursor: pointer;
+    }
+
+    .user-filter select:focus {
+      outline: none;
+      border-color: #4A8B8B;
+    }
+
+    /* Toast */
     .toast {
       position: fixed;
-      bottom: 20px;
-      right: 20px;
+      bottom: 24px;
+      right: 24px;
       padding: 16px 24px;
-      border-radius: 8px;
+      border-radius: 12px;
       color: white;
       font-weight: 500;
+      font-size: 14px;
       transform: translateY(100px);
       opacity: 0;
       transition: all 0.3s;
       z-index: 1000;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
     }
 
     .toast.show {
@@ -271,13 +709,14 @@
     }
 
     .toast.success {
-      background: #28a745;
+      background: #10b981;
     }
 
     .toast.error {
-      background: #dc3545;
+      background: #ef4444;
     }
 
+    /* Loading */
     .loading {
       display: inline-block;
       width: 16px;
@@ -292,336 +731,223 @@
       to { transform: rotate(360deg); }
     }
 
-    .filter-tabs {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 20px;
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
     }
 
-    .filter-tab {
-      padding: 8px 16px;
-      border: 1px solid #ddd;
-      border-radius: 20px;
-      background: white;
-      cursor: pointer;
-      font-size: 14px;
-      transition: all 0.2s;
+    ::-webkit-scrollbar-track {
+      background: transparent;
     }
 
-    .filter-tab:hover {
-      border-color: #4A8B8B;
+    ::-webkit-scrollbar-thumb {
+      background: #d1d5db;
+      border-radius: 3px;
     }
 
-    .filter-tab.active {
-      background: #4A8B8B;
-      color: white;
-      border-color: #4A8B8B;
-    }
-
-    .refresh-btn {
-      background: none;
-      border: 1px solid #ddd;
-      padding: 8px 12px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 14px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .refresh-btn:hover {
-      background: #f5f5f5;
-    }
-
-    .header-actions {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
-
-    /* Activity Log Styles */
-    .activity-list {
-      max-height: 500px;
-      overflow-y: auto;
-    }
-
-    .activity-item {
-      padding: 12px;
-      border-bottom: 1px solid #eee;
-      font-size: 13px;
-    }
-
-    .activity-item:last-child {
-      border-bottom: none;
-    }
-
-    .activity-item:hover {
-      background: #f9f9f9;
-    }
-
-    .activity-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 4px;
-    }
-
-    .activity-type {
-      display: inline-block;
-      padding: 2px 8px;
-      border-radius: 12px;
-      font-size: 11px;
-      font-weight: 500;
-      text-transform: uppercase;
-    }
-
-    .activity-type.reminder {
-      background: #e3f2fd;
-      color: #1565c0;
-    }
-
-    .activity-type.confirmation {
-      background: #e8f5e9;
-      color: #2e7d32;
-    }
-
-    .activity-type.cancellation {
-      background: #ffebee;
-      color: #c62828;
-    }
-
-    .activity-type.failed {
-      background: #ffebee;
-      color: #c62828;
-    }
-
-    .activity-time {
-      color: #999;
-      font-size: 11px;
-    }
-
-    .activity-details {
-      color: #555;
-      margin-bottom: 4px;
-    }
-
-    .activity-meeting {
-      font-weight: 500;
-      color: #333;
-    }
-
-    .activity-recipient {
-      color: #888;
-    }
-
-    .activity-links {
-      display: flex;
-      gap: 8px;
-      margin-top: 6px;
-    }
-
-    .activity-links a {
-      font-size: 11px;
-      color: #4A8B8B;
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .activity-links a:hover {
-      text-decoration: underline;
-    }
-
-    .gmail-icon {
-      width: 14px;
-      height: 14px;
-    }
-
-    .btn-calendar {
-      background: #4285f4;
-      color: white;
-      font-size: 12px;
-      padding: 4px 10px;
-    }
-
-    .btn-calendar:hover {
-      background: #3367d6;
-    }
-
-    .header-logo {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .header-logo img {
-      width: 40px;
-      height: 40px;
-      border-radius: 8px;
-    }
-
-    .meeting-assigned {
-      color: #4A8B8B;
-      font-size: 12px;
-      margin-top: 4px;
+    ::-webkit-scrollbar-thumb:hover {
+      background: #9ca3af;
     }
   </style>
 </head>
 <body>
-  <header>
-    <div class="container">
-      <div class="header-logo">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <a href="/" class="sidebar-logo">
         <img src="/logo.png" alt="Bright Automations">
-        <h1>Meeting Follow-up System</h1>
-      </div>
-      <div class="header-actions">
-        <div class="stats">
-          <div class="stat" id="stat-total">Total: 0</div>
-          <div class="stat" id="stat-pending">Pending: 0</div>
-          <div class="stat" id="stat-confirmed">Confirmed: 0</div>
+        <div class="sidebar-logo-text">
+          Bright Automations
+          <span>Meeting Follow-up</span>
         </div>
-        <a href="/settings.html" style="background: rgba(255,255,255,0.2); padding: 8px 16px; border-radius: 20px; color: white; text-decoration: none; font-size: 14px;">Settings</a>
+      </a>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a href="/" class="nav-item active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+          <line x1="16" y1="2" x2="16" y2="6"></line>
+          <line x1="8" y1="2" x2="8" y2="6"></line>
+          <line x1="3" y1="10" x2="21" y2="10"></line>
+        </svg>
+        Dashboard
+      </a>
+      <a href="/settings.html" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+        </svg>
+        Settings
+      </a>
+    </nav>
+
+    <div class="sidebar-stats">
+      <div class="stat-grid">
+        <div class="stat-item">
+          <div class="stat-value" id="stat-total">0</div>
+          <div class="stat-label">Total</div>
+        </div>
+        <div class="stat-item highlight">
+          <div class="stat-value" id="stat-confirmed">0</div>
+          <div class="stat-label">Confirmed</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="stat-pending">0</div>
+          <div class="stat-label">Pending</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="stat-emails">0</div>
+          <div class="stat-label">Emails Sent</div>
+        </div>
       </div>
     </div>
-  </header>
+  </aside>
 
-  <div class="container">
-    <div class="grid">
-      <!-- Add Meeting Form -->
-      <div class="card">
-        <h2>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-            <line x1="16" y1="2" x2="16" y2="6"></line>
-            <line x1="8" y1="2" x2="8" y2="6"></line>
-            <line x1="3" y1="10" x2="21" y2="10"></line>
+  <!-- Main Content -->
+  <main class="main-content">
+    <div class="top-bar">
+      <h1 class="page-title">Dashboard</h1>
+      <div class="top-bar-actions">
+        <button class="refresh-btn" onclick="refreshAll()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M23 4v6h-6"></path>
+            <path d="M1 20v-6h6"></path>
+            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
           </svg>
-          Add New Meeting
-        </h2>
-        <form id="meeting-form">
-          <div class="form-group">
-            <label for="clientName">Client Name</label>
-            <input type="text" id="clientName" name="clientName" placeholder="John Doe" required>
-          </div>
-          <div class="form-group">
-            <label for="clientEmail">Client Email</label>
-            <input type="email" id="clientEmail" name="clientEmail" placeholder="john@example.com" required>
-          </div>
-          <div class="form-group">
-            <label for="meetingTitle">Meeting Title</label>
-            <input type="text" id="meetingTitle" name="meetingTitle" placeholder="Strategy Discussion" required>
-          </div>
-          <div class="form-group">
-            <label for="scheduledDate">Date</label>
-            <input type="date" id="scheduledDate" name="scheduledDate" required>
-          </div>
-          <div class="form-group">
-            <label for="scheduledTime">Time</label>
-            <input type="time" id="scheduledTime" name="scheduledTime" required>
-          </div>
-          <div class="form-group">
-            <label for="assignedUser">Assigned To</label>
-            <select id="assignedUser" name="assignedUser" style="width: 100%; padding: 12px 14px; border: 1px solid #ddd; border-radius: 8px; font-size: 15px; background: white;">
-              <option value="">-- Select Team Member --</option>
-            </select>
-          </div>
-          <button type="submit" class="btn btn-primary" id="submit-btn">
-            <span class="btn-text">Schedule Meeting</span>
-          </button>
-        </form>
+          Refresh
+        </button>
       </div>
+    </div>
 
-      <!-- Meeting List -->
-      <div class="card">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-          <h2 style="margin-bottom: 0;">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-              <circle cx="9" cy="7" r="4"></circle>
-              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-            </svg>
-            Upcoming Meetings
-          </h2>
-          <button class="refresh-btn" onclick="loadMeetings()">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M23 4v6h-6"></path>
-              <path d="M1 20v-6h6"></path>
-              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
-            </svg>
-            Refresh
-          </button>
-        </div>
-
-        <div class="filter-tabs">
-          <button class="filter-tab active" data-filter="all">All</button>
-          <button class="filter-tab" data-filter="pending">Pending</button>
-          <button class="filter-tab" data-filter="confirmed">Confirmed</button>
-        </div>
-        <div style="margin-bottom: 16px;">
-          <select id="userFilter" onchange="filterByUser()" style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
-            <option value="">All Team Members</option>
-          </select>
-        </div>
-
-        <div class="meeting-list" id="meeting-list">
-          <div class="empty-state">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-              <line x1="16" y1="2" x2="16" y2="6"></line>
-              <line x1="8" y1="2" x2="8" y2="6"></line>
-              <line x1="3" y1="10" x2="21" y2="10"></line>
-            </svg>
-            <p>No upcoming meetings</p>
+    <div class="content-area">
+      <div class="content-grid">
+        <!-- New Meeting Form -->
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              Schedule Meeting
+            </h2>
+          </div>
+          <div class="card-body">
+            <form id="meeting-form">
+              <div class="form-group">
+                <label class="form-label">Client Name</label>
+                <input type="text" class="form-input" id="clientName" placeholder="John Doe" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Client Email</label>
+                <input type="email" class="form-input" id="clientEmail" placeholder="john@example.com" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Meeting Title</label>
+                <input type="text" class="form-input" id="meetingTitle" placeholder="Strategy Discussion" required>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Date</label>
+                  <input type="date" class="form-input" id="scheduledDate" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Time</label>
+                  <input type="time" class="form-input" id="scheduledTime" required>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Assigned To</label>
+                <select class="form-input" id="assignedUser">
+                  <option value="">Select team member...</option>
+                </select>
+              </div>
+              <button type="submit" class="btn btn-primary" id="submit-btn">
+                <span class="btn-text">Schedule Meeting</span>
+              </button>
+            </form>
           </div>
         </div>
-      </div>
 
-      <!-- Email Activity Log -->
-      <div class="card activity-card">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-          <h2 style="margin-bottom: 0;">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
-              <polyline points="22,6 12,13 2,6"></polyline>
-            </svg>
-            Email Activity
-          </h2>
-          <button class="refresh-btn" onclick="loadActivity()">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M23 4v6h-6"></path>
-              <path d="M1 20v-6h6"></path>
-              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
-            </svg>
-          </button>
-        </div>
+        <!-- Right Column -->
+        <div style="display: flex; flex-direction: column; gap: 32px;">
+          <!-- Meetings List -->
+          <div class="card" style="flex: 1;">
+            <div class="card-header">
+              <h2 class="card-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="9" cy="7" r="4"></circle>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+                Upcoming Meetings
+              </h2>
+              <div class="filter-tabs">
+                <button class="filter-tab active" data-filter="all">All</button>
+                <button class="filter-tab" data-filter="pending">Pending</button>
+                <button class="filter-tab" data-filter="confirmed">Confirmed</button>
+              </div>
+            </div>
+            <div class="user-filter">
+              <select id="userFilter" onchange="filterByUser()">
+                <option value="">All Team Members</option>
+              </select>
+            </div>
+            <div class="card-body-flush">
+              <div class="meeting-list" id="meeting-list">
+                <div class="empty-state">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                  </svg>
+                  <p>No upcoming meetings</p>
+                </div>
+              </div>
+            </div>
+          </div>
 
-        <div class="activity-list" id="activity-list">
-          <div class="empty-state" style="padding: 20px;">
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity: 0.5;">
-              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
-              <polyline points="22,6 12,13 2,6"></polyline>
-            </svg>
-            <p style="margin-top: 12px;">No email activity yet</p>
+          <!-- Activity Log -->
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                  <polyline points="22,6 12,13 2,6"></polyline>
+                </svg>
+                Email Activity
+              </h2>
+            </div>
+            <div class="card-body-flush">
+              <div class="activity-list" id="activity-list">
+                <div class="empty-state" style="padding: 40px 24px;">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                    <polyline points="22,6 12,13 2,6"></polyline>
+                  </svg>
+                  <p>No email activity yet</p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
+  </main>
 
-  <!-- Toast notification -->
+  <!-- Toast -->
   <div class="toast" id="toast"></div>
 
   <script>
     const API_BASE = '/api';
     let allMeetings = [];
     let allUsers = [];
+    let allActivity = [];
     let currentFilter = 'all';
     let currentUserFilter = '';
-
-    let allActivity = [];
 
     // Initialize
     document.addEventListener('DOMContentLoaded', () => {
@@ -646,7 +972,7 @@
 
     function populateUserDropdown() {
       const select = document.getElementById('assignedUser');
-      select.innerHTML = '<option value="">-- Select Team Member --</option>';
+      select.innerHTML = '<option value="">Select team member...</option>';
 
       allUsers.forEach(user => {
         const option = document.createElement('option');
@@ -655,13 +981,11 @@
         select.appendChild(option);
       });
 
-      // Remember last selection
       const lastUser = localStorage.getItem('lastAssignedUser');
       if (lastUser && allUsers.some(u => u.id === lastUser)) {
         select.value = lastUser;
       }
 
-      // Also populate the filter dropdown
       const filterSelect = document.getElementById('userFilter');
       filterSelect.innerHTML = '<option value="">All Team Members</option>';
       allUsers.forEach(user => {
@@ -718,9 +1042,10 @@
       const pending = allMeetings.filter(m => !m.confirmedAt && !m.cancelledAt).length;
       const confirmed = allMeetings.filter(m => m.confirmedAt && !m.cancelledAt).length;
 
-      document.getElementById('stat-total').textContent = `Total: ${total}`;
-      document.getElementById('stat-pending').textContent = `Pending: ${pending}`;
-      document.getElementById('stat-confirmed').textContent = `Confirmed: ${confirmed}`;
+      document.getElementById('stat-total').textContent = total;
+      document.getElementById('stat-pending').textContent = pending;
+      document.getElementById('stat-confirmed').textContent = confirmed;
+      document.getElementById('stat-emails').textContent = allActivity.length;
     }
 
     function renderMeetings() {
@@ -733,10 +1058,8 @@
         filtered = allMeetings.filter(m => m.confirmedAt && !m.cancelledAt);
       }
 
-      // Filter out cancelled meetings from the list
       filtered = filtered.filter(m => !m.cancelledAt);
 
-      // Filter by assigned user
       if (currentUserFilter) {
         filtered = filtered.filter(m => m.assignedUserId === currentUserFilter);
       }
@@ -759,26 +1082,42 @@
       list.innerHTML = filtered.map(meeting => {
         const date = new Date(meeting.scheduledAt);
         const status = meeting.confirmedAt ? 'confirmed' : 'pending';
-        const statusLabel = meeting.confirmedAt ? 'Confirmed' : 'Awaiting Confirmation';
+        const statusLabel = meeting.confirmedAt ? 'Confirmed' : 'Pending';
         const assignedUser = allUsers.find(u => u.id === meeting.assignedUserId);
         const assignedName = assignedUser ? assignedUser.name : 'Unassigned';
+        const initials = meeting.clientName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
 
         return `
           <div class="meeting-item" data-id="${meeting.id}">
+            <div class="meeting-avatar">${initials}</div>
             <div class="meeting-info">
               <div class="meeting-title">${escapeHtml(meeting.meetingTitle)}</div>
-              <div class="meeting-client">${escapeHtml(meeting.clientName)} &lt;${escapeHtml(meeting.clientEmail)}&gt;</div>
-              <div class="meeting-time">${formatDate(date)}</div>
-              <div class="meeting-assigned">Assigned to: ${escapeHtml(assignedName)}</div>
+              <div class="meeting-client">${escapeHtml(meeting.clientName)} • ${escapeHtml(meeting.clientEmail)}</div>
+              <div class="meeting-meta">
+                <span class="meeting-meta-item">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
+                  </svg>
+                  ${formatDate(date)}
+                </span>
+                <span class="meeting-meta-item">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                  </svg>
+                  ${escapeHtml(assignedName)}
+                </span>
+              </div>
             </div>
             <div class="meeting-status">
               <span class="status-badge status-${status}">${statusLabel}</span>
             </div>
             <div class="meeting-actions">
               ${meeting.confirmedAt ? `
-                <a href="${generateGoogleCalendarUrl(meeting)}" target="_blank" class="btn btn-small btn-calendar">Add to Calendar</a>
+                <a href="${generateGoogleCalendarUrl(meeting)}" target="_blank" class="btn btn-sm btn-calendar">Calendar</a>
               ` : ''}
-              <button class="btn btn-small btn-cancel" onclick="cancelMeeting('${meeting.id}')">Cancel</button>
+              <button class="btn btn-sm btn-danger" onclick="cancelMeeting('${meeting.id}')">Cancel</button>
             </div>
           </div>
         `;
@@ -805,7 +1144,6 @@
         assignedUserId: assignedUserId || undefined
       };
 
-      // Remember user selection
       if (assignedUserId) {
         localStorage.setItem('lastAssignedUser', assignedUserId);
       }
@@ -823,10 +1161,10 @@
         }
 
         showToast('Meeting scheduled! Confirmation email sent.', 'success');
-        await loadActivity(); // Refresh activity to show the booking email
+        await loadActivity();
         document.getElementById('meeting-form').reset();
         setMinDate();
-        populateUserDropdown(); // Restore user selection
+        populateUserDropdown();
         await loadMeetings();
       } catch (error) {
         showToast(error.message, 'error');
@@ -853,15 +1191,107 @@
       }
     }
 
+    async function loadActivity() {
+      try {
+        const response = await fetch(`${API_BASE}/activity?limit=30`);
+        const data = await response.json();
+        allActivity = data.activity || [];
+        renderActivity();
+        updateStats();
+      } catch (error) {
+        console.error('Failed to load activity:', error);
+      }
+    }
+
+    function renderActivity() {
+      const list = document.getElementById('activity-list');
+
+      if (allActivity.length === 0) {
+        list.innerHTML = `
+          <div class="empty-state" style="padding: 40px 24px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+              <polyline points="22,6 12,13 2,6"></polyline>
+            </svg>
+            <p>No email activity yet</p>
+          </div>
+        `;
+        return;
+      }
+
+      list.innerHTML = allActivity.map(activity => {
+        const typeInfo = getActivityTypeInfo(activity.activityType);
+        const statusClass = activity.status === 'failed' ? 'failed' : typeInfo.class;
+        const gmailLink = activity.gmailThreadId
+          ? `https://mail.google.com/mail/u/0/#inbox/${activity.gmailThreadId}`
+          : null;
+
+        return `
+          <div class="activity-item">
+            <div class="activity-icon ${statusClass}">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                <polyline points="22,6 12,13 2,6"></polyline>
+              </svg>
+            </div>
+            <div class="activity-content">
+              <div class="activity-title">${activity.status === 'failed' ? 'Failed: ' : ''}${typeInfo.label}</div>
+              <div class="activity-subtitle">${escapeHtml(activity.meetingTitle)} • ${escapeHtml(activity.recipientEmail)}</div>
+              ${gmailLink ? `
+                <a href="${gmailLink}" target="_blank" class="activity-link">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                    <polyline points="15 3 21 3 21 9"></polyline>
+                    <line x1="10" y1="14" x2="21" y2="3"></line>
+                  </svg>
+                  View in Gmail
+                </a>
+              ` : ''}
+            </div>
+            <div class="activity-time">${formatActivityTime(activity.createdAt)}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function getActivityTypeInfo(type) {
+      const types = {
+        'booking_confirmation': { label: 'Booking Confirmation', class: 'confirmation' },
+        'reminder_48h': { label: '48h Reminder', class: 'reminder' },
+        'reminder_24h': { label: '24h Reminder', class: 'reminder' },
+        'reminder_6h': { label: '6h Reminder', class: 'reminder' },
+        'reminder_1h': { label: '1h Reminder', class: 'reminder' },
+        'reminder_30m': { label: '30m Reminder', class: 'reminder' },
+        'confirmation_ack': { label: 'Confirmed', class: 'confirmation' },
+        'cancellation': { label: 'Cancelled', class: 'cancellation' },
+      };
+      return types[type] || { label: type, class: 'reminder' };
+    }
+
     function formatDate(date) {
       return date.toLocaleDateString('en-US', {
         weekday: 'short',
         month: 'short',
         day: 'numeric',
-        year: 'numeric',
         hour: 'numeric',
         minute: '2-digit'
       });
+    }
+
+    function formatActivityTime(dateStr) {
+      const date = new Date(dateStr);
+      const now = new Date();
+      const diffMs = now - date;
+      const diffMins = Math.floor(diffMs / 60000);
+      const diffHours = Math.floor(diffMs / 3600000);
+      const diffDays = Math.floor(diffMs / 86400000);
+
+      if (diffMins < 1) return 'Just now';
+      if (diffMins < 60) return `${diffMins}m ago`;
+      if (diffHours < 24) return `${diffHours}h ago`;
+      if (diffDays < 7) return `${diffDays}d ago`;
+
+      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     }
 
     function escapeHtml(text) {
@@ -872,9 +1302,8 @@
 
     function generateGoogleCalendarUrl(meeting) {
       const startDate = new Date(meeting.scheduledAt);
-      const endDate = new Date(startDate.getTime() + 60 * 60 * 1000); // 1 hour meeting
+      const endDate = new Date(startDate.getTime() + 60 * 60 * 1000);
 
-      // Format dates for Google Calendar (YYYYMMDDTHHmmssZ format)
       const formatGoogleDate = (date) => {
         return date.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
       };
@@ -898,96 +1327,10 @@
       }, 3000);
     }
 
-    // Activity log functions
-    async function loadActivity() {
-      try {
-        const response = await fetch(`${API_BASE}/activity?limit=30`);
-        const data = await response.json();
-        allActivity = data.activity || [];
-        renderActivity();
-      } catch (error) {
-        console.error('Failed to load activity:', error);
-      }
-    }
-
-    function renderActivity() {
-      const list = document.getElementById('activity-list');
-
-      if (allActivity.length === 0) {
-        list.innerHTML = `
-          <div class="empty-state" style="padding: 20px;">
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity: 0.5;">
-              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
-              <polyline points="22,6 12,13 2,6"></polyline>
-            </svg>
-            <p style="margin-top: 12px;">No email activity yet</p>
-          </div>
-        `;
-        return;
-      }
-
-      list.innerHTML = allActivity.map(activity => {
-        const typeInfo = getActivityTypeInfo(activity.activityType);
-        const statusClass = activity.status === 'failed' ? 'failed' : typeInfo.class;
-        const gmailLink = activity.gmailThreadId
-          ? `https://mail.google.com/mail/u/0/#inbox/${activity.gmailThreadId}`
-          : null;
-
-        return `
-          <div class="activity-item">
-            <div class="activity-header">
-              <span class="activity-type ${statusClass}">${activity.status === 'failed' ? 'Failed' : typeInfo.label}</span>
-              <span class="activity-time">${formatActivityTime(activity.createdAt)}</span>
-            </div>
-            <div class="activity-details">
-              <div class="activity-meeting">${escapeHtml(activity.meetingTitle)}</div>
-              <div class="activity-recipient">To: ${escapeHtml(activity.recipientEmail)}</div>
-            </div>
-            ${activity.status === 'failed' ? `<div style="color: #c62828; font-size: 11px;">Error: ${escapeHtml(activity.errorMessage || 'Unknown error')}</div>` : ''}
-            ${gmailLink ? `
-              <div class="activity-links">
-                <a href="${gmailLink}" target="_blank">
-                  <svg class="gmail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
-                    <polyline points="22,6 12,13 2,6"></polyline>
-                  </svg>
-                  View in Gmail
-                </a>
-              </div>
-            ` : ''}
-          </div>
-        `;
-      }).join('');
-    }
-
-    function getActivityTypeInfo(type) {
-      const types = {
-        'booking_confirmation': { label: 'Booked', class: 'confirmation' },
-        'reminder_48h': { label: '48h Reminder', class: 'reminder' },
-        'reminder_24h': { label: '24h Reminder', class: 'reminder' },
-        'reminder_6h': { label: '6h Reminder', class: 'reminder' },
-        'reminder_1h': { label: '1h Reminder', class: 'reminder' },
-        'reminder_30m': { label: '30m Reminder', class: 'reminder' },
-        'confirmation_ack': { label: 'Confirmed', class: 'confirmation' },
-        'cancellation': { label: 'Cancelled', class: 'cancellation' },
-      };
-      return types[type] || { label: type, class: 'reminder' };
-    }
-
-    function formatActivityTime(dateStr) {
-      const date = new Date(dateStr);
-      const now = new Date();
-      const diffMs = now - date;
-      const diffMins = Math.floor(diffMs / 60000);
-      const diffHours = Math.floor(diffMs / 3600000);
-      const diffDays = Math.floor(diffMs / 86400000);
-
-      if (diffMins < 1) return 'Just now';
-      if (diffMins < 60) return `${diffMins}m ago`;
-      if (diffHours < 24) return `${diffHours}h ago`;
-      if (diffDays < 7) return `${diffDays}d ago`;
-
-      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    function refreshAll() {
+      loadMeetings();
+      loadActivity();
+      showToast('Refreshed', 'success');
     }
 
     // Auto-refresh every 30 seconds

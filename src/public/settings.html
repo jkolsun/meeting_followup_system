@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Settings | Meeting Follow-up System</title>
+  <title>Settings | Bright Automations</title>
   <link rel="icon" type="image/png" href="/logo.png">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     * {
       margin: 0;
@@ -13,92 +14,196 @@
     }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-      background: #f5f7fa;
-      color: #333;
-      line-height: 1.6;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f8fafb;
+      color: #1a1a2e;
+      line-height: 1.5;
+      min-height: 100vh;
     }
 
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 20px;
+    /* Sidebar */
+    .sidebar {
+      position: fixed;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 260px;
+      background: #fff;
+      border-right: 1px solid #e8ecef;
+      display: flex;
+      flex-direction: column;
+      z-index: 100;
     }
 
-    header {
+    .sidebar-header {
+      padding: 24px;
+      border-bottom: 1px solid #e8ecef;
+    }
+
+    .sidebar-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .sidebar-logo img {
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+    }
+
+    .sidebar-logo-text {
+      font-weight: 700;
+      font-size: 15px;
+      color: #1a1a2e;
+      line-height: 1.3;
+    }
+
+    .sidebar-logo-text span {
+      display: block;
+      font-weight: 400;
+      font-size: 12px;
+      color: #6b7280;
+    }
+
+    .sidebar-nav {
+      padding: 16px 12px;
+      flex: 1;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      border-radius: 10px;
+      color: #4b5563;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.2s;
+      margin-bottom: 4px;
+    }
+
+    .nav-item:hover {
+      background: #f3f4f6;
+      color: #1a1a2e;
+    }
+
+    .nav-item.active {
       background: linear-gradient(135deg, #4A8B8B 0%, #3d7575 100%);
       color: white;
-      padding: 20px 0;
-      margin-bottom: 30px;
     }
 
-    header .container {
+    .nav-item svg {
+      width: 20px;
+      height: 20px;
+      opacity: 0.7;
+    }
+
+    .nav-item.active svg {
+      opacity: 1;
+    }
+
+    /* Main Content */
+    .main-content {
+      margin-left: 260px;
+      min-height: 100vh;
+    }
+
+    .top-bar {
+      background: white;
+      border-bottom: 1px solid #e8ecef;
+      padding: 16px 32px;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 50;
     }
 
-    header h1 {
-      font-size: 24px;
+    .page-title {
+      font-size: 20px;
       font-weight: 600;
+      color: #1a1a2e;
     }
 
-    header a {
-      background: rgba(255,255,255,0.2);
-      padding: 8px 16px;
-      border-radius: 20px;
-      color: white;
-      text-decoration: none;
-      font-size: 14px;
+    .content-area {
+      padding: 32px;
+      max-width: 1200px;
     }
 
-    header a:hover {
-      background: rgba(255,255,255,0.3);
-    }
-
+    /* Tabs */
     .tabs {
       display: flex;
-      gap: 4px;
-      margin-bottom: 24px;
-      background: white;
+      gap: 8px;
       padding: 4px;
+      background: #f3f4f6;
       border-radius: 10px;
       width: fit-content;
+      margin-bottom: 24px;
     }
 
     .tab {
       padding: 10px 20px;
       border: none;
-      background: none;
-      cursor: pointer;
+      background: transparent;
       border-radius: 8px;
       font-size: 14px;
       font-weight: 500;
-      color: #666;
+      color: #6b7280;
+      cursor: pointer;
       transition: all 0.2s;
+      font-family: inherit;
     }
 
     .tab:hover {
-      background: #f0f0f0;
+      color: #374151;
     }
 
     .tab.active {
-      background: #4A8B8B;
-      color: white;
+      background: white;
+      color: #1a1a2e;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
     }
 
+    /* Cards */
     .card {
       background: white;
-      border-radius: 12px;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-      padding: 24px;
-      margin-bottom: 20px;
+      border-radius: 16px;
+      border: 1px solid #e8ecef;
+      overflow: hidden;
+      margin-bottom: 24px;
     }
 
-    .card h2 {
-      font-size: 18px;
-      margin-bottom: 20px;
-      color: #444;
+    .card-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid #e8ecef;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .card-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1a1a2e;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .card-title svg {
+      width: 20px;
+      height: 20px;
+      color: #4A8B8B;
+    }
+
+    .card-body {
+      padding: 24px;
     }
 
     .section {
@@ -109,6 +214,7 @@
       display: block;
     }
 
+    /* User List */
     .user-list {
       display: grid;
       gap: 16px;
@@ -118,25 +224,54 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 16px;
-      border: 1px solid #eee;
-      border-radius: 10px;
+      padding: 20px;
+      border: 1px solid #e8ecef;
+      border-radius: 12px;
+      transition: all 0.2s;
+    }
+
+    .user-item:hover {
+      background: #f9fafb;
+      border-color: #d1d5db;
+    }
+
+    .user-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #4A8B8B 0%, #3d7575 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 600;
+      font-size: 16px;
+      flex-shrink: 0;
+      margin-right: 16px;
+    }
+
+    .user-info {
+      flex: 1;
+      min-width: 0;
     }
 
     .user-info h3 {
-      font-size: 16px;
+      font-size: 15px;
+      font-weight: 600;
       margin-bottom: 4px;
+      color: #1a1a2e;
     }
 
     .user-info p {
-      color: #666;
-      font-size: 14px;
+      color: #6b7280;
+      font-size: 13px;
     }
 
     .user-status {
       display: flex;
       align-items: center;
       gap: 8px;
+      margin-right: 20px;
     }
 
     .status-dot {
@@ -146,11 +281,16 @@
     }
 
     .status-dot.connected {
-      background: #28a745;
+      background: #10b981;
     }
 
     .status-dot.disconnected {
-      background: #dc3545;
+      background: #ef4444;
+    }
+
+    .status-text {
+      font-size: 13px;
+      color: #6b7280;
     }
 
     .user-actions {
@@ -158,18 +298,21 @@
       gap: 8px;
     }
 
+    /* Buttons */
     .btn {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 6px;
-      padding: 8px 16px;
+      gap: 8px;
+      padding: 10px 18px;
       border: none;
-      border-radius: 6px;
-      font-size: 14px;
-      font-weight: 500;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      font-family: inherit;
       cursor: pointer;
       transition: all 0.2s;
+      text-decoration: none;
     }
 
     .btn-primary {
@@ -179,73 +322,91 @@
 
     .btn-primary:hover {
       transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(74, 139, 139, 0.4);
+      box-shadow: 0 8px 20px rgba(74, 139, 139, 0.3);
     }
 
     .btn-secondary {
-      background: #f0f0f0;
-      color: #333;
+      background: #f3f4f6;
+      color: #374151;
     }
 
     .btn-secondary:hover {
-      background: #e0e0e0;
+      background: #e5e7eb;
     }
 
     .btn-danger {
-      background: #dc3545;
+      background: #ef4444;
       color: white;
     }
 
     .btn-danger:hover {
-      background: #c82333;
+      background: #dc2626;
     }
 
     .btn-success {
-      background: #28a745;
+      background: #10b981;
       color: white;
     }
 
     .btn-success:hover {
-      background: #218838;
+      background: #059669;
     }
 
+    /* Form Styles */
     .form-group {
-      margin-bottom: 16px;
+      margin-bottom: 20px;
     }
 
-    .form-group label {
+    .form-group:last-child {
+      margin-bottom: 0;
+    }
+
+    .form-label {
       display: block;
-      font-size: 14px;
-      font-weight: 500;
-      margin-bottom: 6px;
-      color: #555;
+      font-size: 13px;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 8px;
     }
 
-    .form-group input, .form-group select, .form-group textarea {
+    .form-input {
       width: 100%;
-      padding: 10px 14px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
+      padding: 12px 16px;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
       font-size: 14px;
-      transition: border-color 0.2s;
+      font-family: inherit;
+      color: #1a1a2e;
+      transition: all 0.2s;
+      background: #f9fafb;
     }
 
-    .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+    .form-input:focus {
       outline: none;
       border-color: #4A8B8B;
+      background: white;
+      box-shadow: 0 0 0 4px rgba(74, 139, 139, 0.1);
     }
 
-    .form-group textarea {
+    .form-input::placeholder {
+      color: #9ca3af;
+    }
+
+    textarea.form-input {
       min-height: 200px;
-      font-family: monospace;
+      font-family: 'SF Mono', Monaco, Consolas, monospace;
+      font-size: 13px;
+      line-height: 1.6;
+      resize: vertical;
     }
 
-    .form-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
+    .form-help {
+      font-size: 12px;
+      color: #6b7280;
+      margin-top: 6px;
     }
 
+    /* Modal */
     .modal {
       display: none;
       position: fixed;
@@ -253,10 +414,11 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(0,0,0,0.5);
+      background: rgba(0, 0, 0, 0.5);
       z-index: 1000;
       align-items: center;
       justify-content: center;
+      backdrop-filter: blur(4px);
     }
 
     .modal.show {
@@ -265,21 +427,24 @@
 
     .modal-content {
       background: white;
-      border-radius: 12px;
-      padding: 24px;
-      max-width: 500px;
+      border-radius: 16px;
+      padding: 28px;
+      max-width: 480px;
       width: 90%;
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
     }
 
     .modal-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 20px;
+      margin-bottom: 24px;
     }
 
     .modal-header h3 {
       font-size: 18px;
+      font-weight: 600;
+      color: #1a1a2e;
     }
 
     .modal-close {
@@ -287,29 +452,37 @@
       border: none;
       font-size: 24px;
       cursor: pointer;
-      color: #666;
+      color: #6b7280;
+      padding: 4px;
+      line-height: 1;
+      transition: color 0.2s;
+    }
+
+    .modal-close:hover {
+      color: #1a1a2e;
     }
 
     .modal-actions {
       display: flex;
       justify-content: flex-end;
       gap: 12px;
-      margin-top: 20px;
+      margin-top: 24px;
     }
 
+    /* Template Editor */
     .template-editor {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 24px;
     }
 
-    @media (max-width: 900px) {
+    @media (max-width: 1000px) {
       .template-editor {
         grid-template-columns: 1fr;
       }
     }
 
-    .template-selector {
+    .template-tabs {
       display: flex;
       gap: 8px;
       margin-bottom: 20px;
@@ -318,44 +491,115 @@
 
     .template-tab {
       padding: 8px 16px;
-      border: 1px solid #ddd;
+      border: 1px solid #e5e7eb;
       border-radius: 20px;
       background: white;
       cursor: pointer;
       font-size: 13px;
+      font-weight: 500;
+      font-family: inherit;
       transition: all 0.2s;
+      color: #4b5563;
     }
 
     .template-tab:hover {
       border-color: #4A8B8B;
+      color: #4A8B8B;
     }
 
     .template-tab.active {
-      background: #4A8B8B;
+      background: linear-gradient(135deg, #4A8B8B 0%, #3d7575 100%);
       color: white;
-      border-color: #4A8B8B;
+      border-color: transparent;
+    }
+
+    .variable-hint {
+      background: #f8fafb;
+      border: 1px solid #e8ecef;
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 20px;
+    }
+
+    .variable-hint-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .variable-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .variable-tag {
+      background: white;
+      border: 1px solid #e5e7eb;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-family: 'SF Mono', Monaco, Consolas, monospace;
+      font-size: 12px;
+      color: #4A8B8B;
     }
 
     .preview-frame {
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      height: 400px;
+      border: 1px solid #e8ecef;
+      border-radius: 10px;
+      height: 450px;
       overflow: auto;
       background: white;
     }
 
+    .preview-frame iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    .template-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 60px 24px;
+      color: #9ca3af;
+    }
+
+    .empty-state svg {
+      width: 64px;
+      height: 64px;
+      margin-bottom: 16px;
+      opacity: 0.4;
+    }
+
+    .empty-state p {
+      font-size: 14px;
+      margin-bottom: 20px;
+    }
+
+    /* Toast */
     .toast {
       position: fixed;
-      bottom: 20px;
-      right: 20px;
+      bottom: 24px;
+      right: 24px;
       padding: 16px 24px;
-      border-radius: 8px;
+      border-radius: 12px;
       color: white;
       font-weight: 500;
+      font-size: 14px;
       transform: translateY(100px);
       opacity: 0;
       transition: all 0.3s;
       z-index: 1000;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
     }
 
     .toast.show {
@@ -364,127 +608,204 @@
     }
 
     .toast.success {
-      background: #28a745;
+      background: #10b981;
     }
 
     .toast.error {
-      background: #dc3545;
+      background: #ef4444;
     }
 
-    .empty-state {
-      text-align: center;
-      padding: 40px;
-      color: #888;
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
     }
 
-    .help-text {
-      font-size: 12px;
-      color: #888;
-      margin-top: 6px;
+    ::-webkit-scrollbar-track {
+      background: transparent;
     }
 
-    .variable-hint {
-      background: #f8f9fa;
-      border: 1px solid #e9ecef;
-      border-radius: 6px;
-      padding: 12px;
-      margin-bottom: 16px;
-      font-size: 13px;
+    ::-webkit-scrollbar-thumb {
+      background: #d1d5db;
+      border-radius: 3px;
     }
 
-    .variable-hint code {
-      background: #e9ecef;
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-size: 12px;
+    ::-webkit-scrollbar-thumb:hover {
+      background: #9ca3af;
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        transform: translateX(-100%);
+      }
+      .main-content {
+        margin-left: 0;
+      }
     }
   </style>
 </head>
 <body>
-  <header>
-    <div class="container">
-      <div style="display: flex; align-items: center; gap: 12px;">
-        <img src="/logo.png" alt="Bright Automations" style="width: 40px; height: 40px; border-radius: 8px;">
-        <h1>Settings</h1>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <a href="/" class="sidebar-logo">
+        <img src="/logo.png" alt="Bright Automations">
+        <div class="sidebar-logo-text">
+          Bright Automations
+          <span>Meeting Follow-up</span>
+        </div>
+      </a>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a href="/" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+          <line x1="16" y1="2" x2="16" y2="6"></line>
+          <line x1="8" y1="2" x2="8" y2="6"></line>
+          <line x1="3" y1="10" x2="21" y2="10"></line>
+        </svg>
+        Dashboard
+      </a>
+      <a href="/settings.html" class="nav-item active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+        </svg>
+        Settings
+      </a>
+    </nav>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <div class="top-bar">
+      <h1 class="page-title">Settings</h1>
+    </div>
+
+    <div class="content-area">
+      <div class="tabs">
+        <button class="tab active" data-section="users">Team Members</button>
+        <button class="tab" data-section="templates">Email Templates</button>
       </div>
-      <a href="/">Back to Dashboard</a>
-    </div>
-  </header>
 
-  <div class="container">
-    <div class="tabs">
-      <button class="tab active" data-section="users">Team Members</button>
-      <button class="tab" data-section="templates">Email Templates</button>
-    </div>
-
-    <!-- Team Members Section -->
-    <div id="users-section" class="section active">
-      <div class="card">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-          <h2>Team Members</h2>
-          <button class="btn btn-primary" onclick="showAddUserModal()">Add Team Member</button>
-        </div>
-
-        <div class="user-list" id="user-list">
-          <div class="empty-state">Loading...</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Email Templates Section -->
-    <div id="templates-section" class="section">
-      <div class="card">
-        <h2>Email Templates</h2>
-
-        <div class="form-group">
-          <label>Select Team Member</label>
-          <select id="template-user-select" onchange="loadTemplatesForUser()">
-            <option value="">-- Select Team Member --</option>
-          </select>
-        </div>
-
-        <div id="template-editor-container" style="display: none;">
-          <div class="template-selector" id="template-tabs"></div>
-
-          <div class="variable-hint">
-            <strong>Available Variables:</strong>
-            <code>{{clientName}}</code>
-            <code>{{meetingTitle}}</code>
-            <code>{{meetingDate}}</code>
-            <code>{{confirmUrl}}</code>
-            <code>{{senderName}}</code>
+      <!-- Team Members Section -->
+      <div id="users-section" class="section active">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+              </svg>
+              Team Members
+            </h2>
+            <button class="btn btn-primary" onclick="showAddUserModal()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px;">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              Add Team Member
+            </button>
           </div>
-
-          <div class="template-editor">
-            <div>
-              <div class="form-group">
-                <label>Subject</label>
-                <input type="text" id="template-subject">
-              </div>
-              <div class="form-group">
-                <label>HTML Body</label>
-                <textarea id="template-html"></textarea>
-              </div>
-              <div class="form-group">
-                <label>Plain Text Body</label>
-                <textarea id="template-text" style="min-height: 100px;"></textarea>
-              </div>
-              <div style="display: flex; gap: 12px;">
-                <button class="btn btn-primary" onclick="saveTemplate()">Save Template</button>
-                <button class="btn btn-secondary" onclick="resetTemplate()">Reset to Default</button>
-              </div>
-            </div>
-            <div>
-              <label style="display: block; font-size: 14px; font-weight: 500; margin-bottom: 6px; color: #555;">Preview</label>
-              <div class="preview-frame">
-                <iframe id="preview-iframe" style="width: 100%; height: 100%; border: none;"></iframe>
+          <div class="card-body">
+            <div class="user-list" id="user-list">
+              <div class="empty-state">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="9" cy="7" r="4"></circle>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+                <p>Loading team members...</p>
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      <!-- Email Templates Section -->
+      <div id="templates-section" class="section">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                <polyline points="22,6 12,13 2,6"></polyline>
+              </svg>
+              Email Templates
+            </h2>
+          </div>
+          <div class="card-body">
+            <div class="form-group" style="max-width: 400px;">
+              <label class="form-label">Select Team Member</label>
+              <select class="form-input" id="template-user-select" onchange="loadTemplatesForUser()">
+                <option value="">Choose a team member...</option>
+              </select>
+            </div>
+
+            <div id="template-editor-container" style="display: none; margin-top: 24px;">
+              <div class="template-tabs" id="template-tabs"></div>
+
+              <div class="variable-hint">
+                <div class="variable-hint-title">Available Variables</div>
+                <div class="variable-tags">
+                  <span class="variable-tag">{{clientName}}</span>
+                  <span class="variable-tag">{{meetingTitle}}</span>
+                  <span class="variable-tag">{{meetingDate}}</span>
+                  <span class="variable-tag">{{confirmUrl}}</span>
+                  <span class="variable-tag">{{senderName}}</span>
+                </div>
+              </div>
+
+              <div class="template-editor">
+                <div>
+                  <div class="form-group">
+                    <label class="form-label">Subject Line</label>
+                    <input type="text" class="form-input" id="template-subject">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">HTML Body</label>
+                    <textarea class="form-input" id="template-html"></textarea>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Plain Text Body</label>
+                    <textarea class="form-input" id="template-text" style="min-height: 120px;"></textarea>
+                    <p class="form-help">Used when HTML is not supported by the email client.</p>
+                  </div>
+                  <div class="template-actions">
+                    <button class="btn btn-primary" onclick="saveTemplate()">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px;">
+                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                        <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                        <polyline points="7 3 7 8 15 8"></polyline>
+                      </svg>
+                      Save Template
+                    </button>
+                    <button class="btn btn-secondary" onclick="resetTemplate()">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px;">
+                        <path d="M23 4v6h-6"></path>
+                        <path d="M1 20v-6h6"></path>
+                        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                      </svg>
+                      Reset to Default
+                    </button>
+                  </div>
+                </div>
+                <div>
+                  <label class="form-label">Preview</label>
+                  <div class="preview-frame">
+                    <iframe id="preview-iframe"></iframe>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-  </div>
+  </main>
 
   <!-- Add User Modal -->
   <div class="modal" id="add-user-modal">
@@ -495,13 +816,13 @@
       </div>
       <form id="add-user-form" onsubmit="createUser(event)">
         <div class="form-group">
-          <label>Name</label>
-          <input type="text" id="new-user-name" placeholder="John Doe" required>
+          <label class="form-label">Name</label>
+          <input type="text" class="form-input" id="new-user-name" placeholder="John Doe" required>
         </div>
         <div class="form-group">
-          <label>Email</label>
-          <input type="email" id="new-user-email" placeholder="john@example.com" required>
-          <p class="help-text">This should be a Gmail address that will be used to send emails.</p>
+          <label class="form-label">Email</label>
+          <input type="email" class="form-input" id="new-user-email" placeholder="john@example.com" required>
+          <p class="form-help">This should be a Gmail address that will be used to send emails.</p>
         </div>
         <div class="modal-actions">
           <button type="button" class="btn btn-secondary" onclick="hideAddUserModal()">Cancel</button>
@@ -577,36 +898,47 @@
       if (allUsers.length === 0) {
         container.innerHTML = `
           <div class="empty-state">
-            <p>No team members yet. Add your first team member to get started.</p>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+            <p>No team members yet</p>
+            <button class="btn btn-primary" onclick="showAddUserModal()">Add Your First Team Member</button>
           </div>
         `;
         return;
       }
 
-      container.innerHTML = allUsers.map(user => `
-        <div class="user-item">
-          <div class="user-info">
-            <h3>${escapeHtml(user.name)}</h3>
-            <p>${escapeHtml(user.email)}</p>
+      container.innerHTML = allUsers.map(user => {
+        const initials = user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+        return `
+          <div class="user-item">
+            <div class="user-avatar">${initials}</div>
+            <div class="user-info">
+              <h3>${escapeHtml(user.name)}</h3>
+              <p>${escapeHtml(user.email)}</p>
+            </div>
+            <div class="user-status">
+              <span class="status-dot ${user.hasGmailConnected ? 'connected' : 'disconnected'}"></span>
+              <span class="status-text">${user.hasGmailConnected ? 'Gmail Connected' : 'Gmail Not Connected'}</span>
+            </div>
+            <div class="user-actions">
+              ${user.hasGmailConnected
+                ? `<button class="btn btn-secondary" onclick="disconnectGmail('${user.id}')">Disconnect</button>`
+                : `<button class="btn btn-success" onclick="connectGmail('${user.id}')">Connect Gmail</button>`
+              }
+              <button class="btn btn-danger" onclick="deleteUser('${user.id}', '${escapeHtml(user.name)}')">Delete</button>
+            </div>
           </div>
-          <div class="user-status">
-            <span class="status-dot ${user.hasGmailConnected ? 'connected' : 'disconnected'}"></span>
-            <span>${user.hasGmailConnected ? 'Gmail Connected' : 'Gmail Not Connected'}</span>
-          </div>
-          <div class="user-actions">
-            ${user.hasGmailConnected
-              ? `<button class="btn btn-secondary" onclick="disconnectGmail('${user.id}')">Disconnect Gmail</button>`
-              : `<button class="btn btn-success" onclick="connectGmail('${user.id}')">Connect Gmail</button>`
-            }
-            <button class="btn btn-danger" onclick="deleteUser('${user.id}', '${escapeHtml(user.name)}')">Delete</button>
-          </div>
-        </div>
-      `).join('');
+        `;
+      }).join('');
     }
 
     function populateTemplateUserSelect() {
       const select = document.getElementById('template-user-select');
-      select.innerHTML = '<option value="">-- Select Team Member --</option>';
+      select.innerHTML = '<option value="">Choose a team member...</option>';
 
       allUsers.forEach(user => {
         const option = document.createElement('option');
