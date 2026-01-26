@@ -38,6 +38,7 @@ async function initializeDatabase(): Promise<Database> {
       owner_auth_id TEXT NOT NULL,
       google_calendar_connected INTEGER DEFAULT 0,
       google_calendar_refresh_token TEXT,
+      timezone TEXT DEFAULT 'America/New_York',
       stripe_customer_id TEXT,
       stripe_subscription_id TEXT,
       plan TEXT DEFAULT 'free',
@@ -52,6 +53,9 @@ async function initializeDatabase(): Promise<Database> {
   } catch (e) { /* Column already exists */ }
   try {
     db.run(`ALTER TABLE organizations ADD COLUMN google_calendar_refresh_token TEXT`);
+  } catch (e) { /* Column already exists */ }
+  try {
+    db.run(`ALTER TABLE organizations ADD COLUMN timezone TEXT DEFAULT 'America/New_York'`);
   } catch (e) { /* Column already exists */ }
 
   // Users table - team members who send emails (now linked to org)

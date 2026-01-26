@@ -43,6 +43,7 @@ export async function updateOrganization(orgId: string, data: {
   primaryColor?: string;
   googleCalendarConnected?: boolean;
   googleCalendarRefreshToken?: string;
+  timezone?: string;
   stripeCustomerId?: string;
   stripeSubscriptionId?: string;
   plan?: PlanType;
@@ -69,6 +70,10 @@ export async function updateOrganization(orgId: string, data: {
   if (data.googleCalendarRefreshToken !== undefined) {
     updates.push('google_calendar_refresh_token = ?');
     params.push(data.googleCalendarRefreshToken);
+  }
+  if (data.timezone !== undefined) {
+    updates.push('timezone = ?');
+    params.push(data.timezone);
   }
   if (data.stripeCustomerId !== undefined) {
     updates.push('stripe_customer_id = ?');
@@ -107,6 +112,7 @@ function mapRowToOrganization(row: any): Organization {
     ownerAuthId: row.owner_auth_id,
     googleCalendarConnected: row.google_calendar_connected === 1 || row.google_calendar_connected === true,
     googleCalendarRefreshToken: row.google_calendar_refresh_token || null,
+    timezone: row.timezone || 'America/New_York',
     stripeCustomerId: row.stripe_customer_id || null,
     stripeSubscriptionId: row.stripe_subscription_id || null,
     plan: (row.plan || 'free') as PlanType,

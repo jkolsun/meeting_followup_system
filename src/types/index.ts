@@ -9,6 +9,7 @@ export interface Organization {
   ownerAuthId: string;
   googleCalendarConnected: boolean;
   googleCalendarRefreshToken: string | null;
+  timezone: string;
   stripeCustomerId: string | null;
   stripeSubscriptionId: string | null;
   plan: PlanType;

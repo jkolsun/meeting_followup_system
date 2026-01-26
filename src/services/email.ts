@@ -1,16 +1,19 @@
 import { format } from 'date-fns';
+import { formatInTimeZone } from 'date-fns-tz';
 import { Meeting, ReminderType, User, TemplateType, EmailTemplate, EmailActivityType } from '../types';
 import { sendEmail, sendEmailAsUser, SendEmailResult } from './gmail';
 import { createEmailThread, getEmailTemplate, getUserById, createEmailActivity } from '../db/repositories';
 
 const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
+// Default timezone for email formatting - can be overridden per organization later
+const DEFAULT_TIMEZONE = process.env.DEFAULT_TIMEZONE || 'America/New_York';
 
 function getConfirmationUrl(meeting: Meeting): string {
   return `${BASE_URL}/api/confirm/${meeting.confirmationToken}`;
 }
 
-function formatMeetingDate(date: Date): string {
-  return format(date, "EEEE, MMMM do 'at' h:mm a");
+function formatMeetingDate(date: Date, timezone: string = DEFAULT_TIMEZONE): string {
+  return formatInTimeZone(date, timezone, "EEEE, MMMM do 'at' h:mm a");
 }
 
 // Template variable replacement
