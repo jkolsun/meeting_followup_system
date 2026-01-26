@@ -9,6 +9,9 @@ import usersRouter from './routes/users';
 import templatesRouter from './routes/templates';
 import authRouter from './routes/auth';
 import { isAuthEnabled } from './config/supabase';
+import { createReminderWorker } from './jobs/queue';
+import { closeRedisConnection } from './config/redis';
+import { Worker } from 'bullmq';
 
 const PORT = parseInt(process.env.PORT || '3000', 10);
 
@@ -16,6 +19,16 @@ async function main() {
   // Initialize database
   console.log('Initializing database...');
   await initializeDatabase();
+
+  // Start the reminder worker (processes scheduled email jobs)
+  let worker: Worker | null = null;
+  try {
+    worker = createReminderWorker();
+    console.log('✅ Reminder worker started');
+  } catch (error) {
+    console.warn('⚠️ Could not start reminder worker (Redis may not be available):', error);
+    console.warn('   Scheduled reminders will not be processed until Redis is configured.');
+  }
 
   // Create Express app
   const app = express();
@@ -57,14 +70,16 @@ async function main() {
       console.log('Authentication: Disabled (demo mode)');
       console.log('To enable auth, set SUPABASE_URL and SUPABASE_ANON_KEY env vars');
     }
-    console.log('');
-    console.log('Make sure to run the worker process separately: npm run worker');
   });
 
   // Graceful shutdown
   const shutdown = async () => {
     console.log('\nShutting down...');
     server.close();
+    if (worker) {
+      await worker.close();
+    }
+    await closeRedisConnection();
     closeDatabase();
     process.exit(0);
   };
