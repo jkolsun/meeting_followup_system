@@ -8,8 +8,9 @@ import {
   cancelMeeting,
   getRecentEmailActivityWithMeetings,
   getEmailActivityByMeetingId,
+  getRemindersByMeetingId,
 } from '../db/repositories';
-import { scheduleRemindersForMeeting, cancelRemindersForMeeting } from '../jobs/queue';
+import { scheduleRemindersForMeeting, cancelRemindersForMeeting, reminderQueue } from '../jobs/queue';
 import { sendBookingConfirmationEmail } from '../services/email';
 
 const router = Router();
@@ -174,6 +175,79 @@ router.get('/meetings/:id/activity', async (req: Request, res: Response) => {
   } catch (error) {
     console.error('Error fetching meeting activity:', error);
     return res.status(500).json({ error: 'Failed to fetch meeting activity' });
+  }
+});
+
+// Debug endpoint to check queue status
+router.get('/debug/queue', async (req: Request, res: Response) => {
+  try {
+    const [waiting, active, delayed, completed, failed] = await Promise.all([
+      reminderQueue.getWaitingCount(),
+      reminderQueue.getActiveCount(),
+      reminderQueue.getDelayedCount(),
+      reminderQueue.getCompletedCount(),
+      reminderQueue.getFailedCount(),
+    ]);
+
+    // Get delayed jobs details
+    const delayedJobs = await reminderQueue.getDelayed(0, 20);
+    const delayedDetails = delayedJobs.map(job => ({
+      id: job.id,
+      name: job.name,
+      data: job.data,
+      delay: job.opts.delay,
+      processAt: new Date(job.timestamp + (job.opts.delay || 0)).toISOString(),
+    }));
+
+    // Get failed jobs details
+    const failedJobs = await reminderQueue.getFailed(0, 10);
+    const failedDetails = failedJobs.map(job => ({
+      id: job.id,
+      name: job.name,
+      data: job.data,
+      failedReason: job.failedReason,
+    }));
+
+    return res.json({
+      counts: { waiting, active, delayed, completed, failed },
+      delayedJobs: delayedDetails,
+      failedJobs: failedDetails,
+    });
+  } catch (error) {
+    console.error('Error checking queue:', error);
+    return res.status(500).json({ error: 'Failed to check queue', details: String(error) });
+  }
+});
+
+// Debug endpoint to check reminders for a meeting
+router.get('/debug/meeting/:id/reminders', async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const meeting = await getMeetingById(id);
+
+    if (!meeting) {
+      return res.status(404).json({ error: 'Meeting not found' });
+    }
+
+    const reminders = await getRemindersByMeetingId(id);
+
+    return res.json({
+      meeting: {
+        id: meeting.id,
+        clientName: meeting.clientName,
+        scheduledAt: meeting.scheduledAt,
+        confirmedAt: meeting.confirmedAt,
+        cancelledAt: meeting.cancelledAt,
+      },
+      reminders: reminders.map(r => ({
+        ...r,
+        scheduledFor: r.scheduledFor,
+        isPast: new Date(r.scheduledFor) < new Date(),
+      })),
+    });
+  } catch (error) {
+    console.error('Error checking reminders:', error);
+    return res.status(500).json({ error: 'Failed to check reminders' });
   }
 });
 
