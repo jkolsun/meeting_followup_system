@@ -2,11 +2,16 @@ import { format } from 'date-fns';
 import { formatInTimeZone } from 'date-fns-tz';
 import { Meeting, ReminderType, User, TemplateType, EmailTemplate, EmailActivityType } from '../types';
 import { sendEmail, sendEmailAsUser, SendEmailResult } from './gmail';
-import { createEmailThread, getEmailTemplate, getUserById, createEmailActivity } from '../db/repositories';
+import { createEmailThread, getEmailTemplate, getUserById, createEmailActivity, updateEmailActivityGmailIds, markEmailActivityFailed } from '../db/repositories';
 
 const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
 // Default timezone for email formatting - can be overridden per organization later
 const DEFAULT_TIMEZONE = process.env.DEFAULT_TIMEZONE || 'America/New_York';
+
+// Generate tracking pixel HTML
+function getTrackingPixelHtml(trackingToken: string): string {
+  return `<img src="${BASE_URL}/api/track/${trackingToken}" width="1" height="1" alt="" style="display:none;width:1px;height:1px;border:0;" />`;
+}
 
 function getConfirmationUrl(meeting: Meeting): string {
   return `${BASE_URL}/api/confirm/${meeting.confirmationToken}`;
@@ -356,8 +361,23 @@ export async function sendBookingConfirmationEmail(meeting: Meeting): Promise<Se
   };
 
   const subject = replaceTemplateVariables(template.subject, vars);
-  const htmlBody = replaceTemplateVariables(template.htmlBody, vars);
+  let htmlBody = replaceTemplateVariables(template.htmlBody, vars);
   const textBody = replaceTemplateVariables(template.textBody, vars);
+
+  // Create activity first to get tracking token
+  const activity = await createEmailActivity({
+    meetingId: meeting.id,
+    activityType: 'booking_confirmation',
+    recipientEmail: meeting.clientEmail,
+    subject,
+    status: 'sent', // Will update if it fails
+  });
+
+  // Inject tracking pixel into HTML body
+  if (activity.trackingToken) {
+    const trackingPixel = getTrackingPixelHtml(activity.trackingToken);
+    htmlBody = htmlBody.replace('</body>', `${trackingPixel}</body>`);
+  }
 
   try {
     let result: SendEmailResult;
@@ -384,30 +404,15 @@ export async function sendBookingConfirmationEmail(meeting: Meeting): Promise<Se
       gmailMessageId: result.messageId,
     });
 
-    // Log activity
-    await createEmailActivity({
-      meetingId: meeting.id,
-      activityType: 'booking_confirmation',
-      recipientEmail: meeting.clientEmail,
-      subject,
-      gmailMessageId: result.messageId,
-      gmailThreadId: result.threadId,
-      status: 'sent',
-    });
+    // Update activity with Gmail IDs
+    await updateEmailActivityGmailIds(activity.id, result.messageId, result.threadId);
 
     console.log(`Sent booking confirmation email to ${meeting.clientEmail}${user ? ` (from ${user.name})` : ''}`);
 
     return result;
   } catch (error) {
-    // Log failed activity
-    await createEmailActivity({
-      meetingId: meeting.id,
-      activityType: 'booking_confirmation',
-      recipientEmail: meeting.clientEmail,
-      subject,
-      status: 'failed',
-      errorMessage: error instanceof Error ? error.message : 'Unknown error',
-    });
+    // Mark activity as failed
+    await markEmailActivityFailed(activity.id, error instanceof Error ? error.message : 'Unknown error');
     throw error;
   }
 }
@@ -431,8 +436,35 @@ export async function sendReminderEmail(
   };
 
   const subject = replaceTemplateVariables(template.subject, vars);
-  const htmlBody = replaceTemplateVariables(template.htmlBody, vars);
-  const textBody = replaceTemplateVariables(template.textBody, vars);
+  let htmlBody = replaceTemplateVariables(template.htmlBody, vars);
+  let textBody = replaceTemplateVariables(template.textBody, vars);
+
+  // Add Zoom link for 1 hour and 30 minute reminders only
+  if ((reminderType === '1_hour' || reminderType === '30_minutes') && meeting.zoomLink) {
+    const zoomHtml = `
+      <div style="background: #2D8CFF; color: white; padding: 15px 20px; border-radius: 8px; margin: 20px 0; text-align: center;">
+        <p style="margin: 0 0 10px 0; font-weight: bold;">Join Zoom Meeting</p>
+        <a href="${meeting.zoomLink}" style="color: white; text-decoration: underline; word-break: break-all;">${meeting.zoomLink}</a>
+      </div>`;
+    // Insert Zoom link before the signature
+    htmlBody = htmlBody.replace('</div>\n</body>', `${zoomHtml}</div>\n</body>`);
+    textBody = textBody + `\n\nJoin Zoom Meeting: ${meeting.zoomLink}`;
+  }
+
+  // Create activity first to get tracking token
+  const activity = await createEmailActivity({
+    meetingId: meeting.id,
+    activityType: getActivityTypeForReminder(reminderType),
+    recipientEmail: meeting.clientEmail,
+    subject,
+    status: 'sent',
+  });
+
+  // Inject tracking pixel into HTML body
+  if (activity.trackingToken) {
+    const trackingPixel = getTrackingPixelHtml(activity.trackingToken);
+    htmlBody = htmlBody.replace('</body>', `${trackingPixel}</body>`);
+  }
 
   // Send using user's account if available, otherwise use default
   let result: SendEmailResult;
@@ -460,30 +492,15 @@ export async function sendReminderEmail(
       gmailMessageId: result.messageId,
     });
 
-    // Log activity
-    await createEmailActivity({
-      meetingId: meeting.id,
-      activityType: getActivityTypeForReminder(reminderType),
-      recipientEmail: meeting.clientEmail,
-      subject,
-      gmailMessageId: result.messageId,
-      gmailThreadId: result.threadId,
-      status: 'sent',
-    });
+    // Update activity with Gmail IDs
+    await updateEmailActivityGmailIds(activity.id, result.messageId, result.threadId);
 
     console.log(`Sent ${reminderType} reminder email to ${meeting.clientEmail}${user ? ` (from ${user.name})` : ''}`);
 
     return result;
   } catch (error) {
-    // Log failed activity
-    await createEmailActivity({
-      meetingId: meeting.id,
-      activityType: getActivityTypeForReminder(reminderType),
-      recipientEmail: meeting.clientEmail,
-      subject,
-      status: 'failed',
-      errorMessage: error instanceof Error ? error.message : 'Unknown error',
-    });
+    // Mark activity as failed
+    await markEmailActivityFailed(activity.id, error instanceof Error ? error.message : 'Unknown error');
     throw error;
   }
 }
@@ -503,8 +520,23 @@ export async function sendCancellationEmail(meeting: Meeting): Promise<void> {
   };
 
   const subject = replaceTemplateVariables(template.subject, vars);
-  const htmlBody = replaceTemplateVariables(template.htmlBody, vars);
+  let htmlBody = replaceTemplateVariables(template.htmlBody, vars);
   const textBody = replaceTemplateVariables(template.textBody, vars);
+
+  // Create activity first to get tracking token
+  const activity = await createEmailActivity({
+    meetingId: meeting.id,
+    activityType: 'cancellation',
+    recipientEmail: meeting.clientEmail,
+    subject,
+    status: 'sent',
+  });
+
+  // Inject tracking pixel into HTML body
+  if (activity.trackingToken) {
+    const trackingPixel = getTrackingPixelHtml(activity.trackingToken);
+    htmlBody = htmlBody.replace('</body>', `${trackingPixel}</body>`);
+  }
 
   try {
     let result: SendEmailResult;
@@ -524,28 +556,13 @@ export async function sendCancellationEmail(meeting: Meeting): Promise<void> {
       });
     }
 
-    // Log activity
-    await createEmailActivity({
-      meetingId: meeting.id,
-      activityType: 'cancellation',
-      recipientEmail: meeting.clientEmail,
-      subject,
-      gmailMessageId: result.messageId,
-      gmailThreadId: result.threadId,
-      status: 'sent',
-    });
+    // Update activity with Gmail IDs
+    await updateEmailActivityGmailIds(activity.id, result.messageId, result.threadId);
 
     console.log(`Sent cancellation email to ${meeting.clientEmail}${user ? ` (from ${user.name})` : ''}`);
   } catch (error) {
-    // Log failed activity
-    await createEmailActivity({
-      meetingId: meeting.id,
-      activityType: 'cancellation',
-      recipientEmail: meeting.clientEmail,
-      subject,
-      status: 'failed',
-      errorMessage: error instanceof Error ? error.message : 'Unknown error',
-    });
+    // Mark activity as failed
+    await markEmailActivityFailed(activity.id, error instanceof Error ? error.message : 'Unknown error');
     throw error;
   }
 }
@@ -565,8 +582,23 @@ export async function sendConfirmationAcknowledgement(meeting: Meeting): Promise
   };
 
   const subject = replaceTemplateVariables(template.subject, vars);
-  const htmlBody = replaceTemplateVariables(template.htmlBody, vars);
+  let htmlBody = replaceTemplateVariables(template.htmlBody, vars);
   const textBody = replaceTemplateVariables(template.textBody, vars);
+
+  // Create activity first to get tracking token
+  const activity = await createEmailActivity({
+    meetingId: meeting.id,
+    activityType: 'confirmation_ack',
+    recipientEmail: meeting.clientEmail,
+    subject,
+    status: 'sent',
+  });
+
+  // Inject tracking pixel into HTML body
+  if (activity.trackingToken) {
+    const trackingPixel = getTrackingPixelHtml(activity.trackingToken);
+    htmlBody = htmlBody.replace('</body>', `${trackingPixel}</body>`);
+  }
 
   try {
     let result: SendEmailResult;
@@ -586,28 +618,13 @@ export async function sendConfirmationAcknowledgement(meeting: Meeting): Promise
       });
     }
 
-    // Log activity
-    await createEmailActivity({
-      meetingId: meeting.id,
-      activityType: 'confirmation_ack',
-      recipientEmail: meeting.clientEmail,
-      subject,
-      gmailMessageId: result.messageId,
-      gmailThreadId: result.threadId,
-      status: 'sent',
-    });
+    // Update activity with Gmail IDs
+    await updateEmailActivityGmailIds(activity.id, result.messageId, result.threadId);
 
     console.log(`Sent confirmation acknowledgement to ${meeting.clientEmail}${user ? ` (from ${user.name})` : ''}`);
   } catch (error) {
-    // Log failed activity
-    await createEmailActivity({
-      meetingId: meeting.id,
-      activityType: 'confirmation_ack',
-      recipientEmail: meeting.clientEmail,
-      subject,
-      status: 'failed',
-      errorMessage: error instanceof Error ? error.message : 'Unknown error',
-    });
+    // Mark activity as failed
+    await markEmailActivityFailed(activity.id, error instanceof Error ? error.message : 'Unknown error');
     throw error;
   }
 }

@@ -685,6 +685,24 @@
       height: 14px;
     }
 
+    .opened-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: #d1fae5;
+      color: #065f46;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 500;
+      margin-left: 8px;
+    }
+
+    .opened-badge svg {
+      width: 12px;
+      height: 12px;
+    }
+
     /* Empty State */
     .empty-state {
       text-align: center;
@@ -914,6 +932,10 @@
                   <label class="form-label">Time</label>
                   <input type="time" class="form-input" id="scheduledTime" required>
                 </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Zoom Link <span style="color: #9ca3af; font-weight: 400;">(optional - shown in 1h & 30min reminders)</span></label>
+                <input type="url" class="form-input" id="zoomLink" placeholder="https://zoom.us/j/...">
               </div>
               <div class="form-group">
                 <label class="form-label">Assigned To</label>
@@ -1269,12 +1291,14 @@
       const scheduledAt = new Date(`${date}T${time}`).toISOString();
       const assignedUserId = document.getElementById('assignedUser').value;
 
+      const zoomLink = document.getElementById('zoomLink').value;
       const data = {
         clientName: document.getElementById('clientName').value,
         clientEmail: document.getElementById('clientEmail').value,
         meetingTitle: document.getElementById('meetingTitle').value,
         scheduledAt,
-        assignedUserId: assignedUserId || undefined
+        assignedUserId: assignedUserId || undefined,
+        zoomLink: zoomLink || undefined
       };
 
       if (assignedUserId) {
@@ -1361,6 +1385,15 @@
         const gmailLink = activity.gmailThreadId
           ? `https://mail.google.com/mail/u/0/#inbox/${activity.gmailThreadId}`
           : null;
+        const openedBadge = activity.openedAt ? `
+          <span class="opened-badge">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+              <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+            Opened
+          </span>
+        ` : '';
 
         return `
           <div class="activity-item">
@@ -1371,7 +1404,7 @@
               </svg>
             </div>
             <div class="activity-content">
-              <div class="activity-title">${activity.status === 'failed' ? 'Failed: ' : ''}${typeInfo.label}</div>
+              <div class="activity-title">${activity.status === 'failed' ? 'Failed: ' : ''}${typeInfo.label}${openedBadge}</div>
               <div class="activity-subtitle">${escapeHtml(activity.meetingTitle)} • ${escapeHtml(activity.recipientEmail)}</div>
               ${gmailLink ? `
                 <a href="${gmailLink}" target="_blank" class="activity-link">

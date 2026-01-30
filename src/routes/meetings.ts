@@ -18,7 +18,7 @@ const router = Router();
 // Create a new meeting and schedule reminders
 router.post('/meetings', async (req: Request, res: Response) => {
   try {
-    const { clientName, clientEmail, meetingTitle, scheduledAt, assignedUserId } = req.body;
+    const { clientName, clientEmail, meetingTitle, scheduledAt, assignedUserId, zoomLink } = req.body;
 
     // Validate required fields
     if (!clientName || !clientEmail || !meetingTitle || !scheduledAt) {
@@ -46,6 +46,7 @@ router.post('/meetings', async (req: Request, res: Response) => {
       meetingTitle,
       scheduledAt: scheduledDate,
       assignedUserId: assignedUserId || undefined,
+      zoomLink: zoomLink || undefined,
     });
 
     // Send immediate booking confirmation email
@@ -71,6 +72,7 @@ router.post('/meetings', async (req: Request, res: Response) => {
         scheduledAt: meeting.scheduledAt.toISOString(),
         confirmationToken: meeting.confirmationToken,
         assignedUserId: meeting.assignedUserId,
+        zoomLink: meeting.zoomLink,
       },
     });
   } catch (error) {

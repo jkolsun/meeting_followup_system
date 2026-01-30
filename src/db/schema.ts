@@ -130,6 +130,9 @@ async function initializeDatabase(): Promise<Database> {
   try {
     db.run(`ALTER TABLE meetings ADD COLUMN google_calendar_event_id TEXT`);
   } catch (e) { /* Column already exists */ }
+  try {
+    db.run(`ALTER TABLE meetings ADD COLUMN zoom_link TEXT`);
+  } catch (e) { /* Column already exists */ }
 
   db.run(`
     CREATE TABLE IF NOT EXISTS reminder_jobs (
@@ -176,10 +179,20 @@ async function initializeDatabase(): Promise<Database> {
       gmail_thread_id TEXT,
       status TEXT NOT NULL DEFAULT 'sent',
       error_message TEXT,
+      tracking_token TEXT UNIQUE,
+      opened_at TEXT,
       created_at TEXT NOT NULL,
       FOREIGN KEY (meeting_id) REFERENCES meetings(id) ON DELETE CASCADE
     )
   `);
+
+  // Migration: Add tracking columns to email_activity if needed
+  try {
+    db.run(`ALTER TABLE email_activity ADD COLUMN tracking_token TEXT UNIQUE`);
+  } catch (e) { /* Column already exists */ }
+  try {
+    db.run(`ALTER TABLE email_activity ADD COLUMN opened_at TEXT`);
+  } catch (e) { /* Column already exists */ }
 
   // Save to disk
   saveDatabase(db);

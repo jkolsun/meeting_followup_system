@@ -29,6 +29,7 @@ export interface Meeting {
   confirmationToken: string;
   assignedUserId: string | null;
   googleCalendarEventId: string | null;
+  zoomLink: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -131,5 +132,7 @@ export interface EmailActivity {
   gmailThreadId: string | null;
   status: EmailActivityStatus;
   errorMessage: string | null;
+  trackingToken: string | null;
+  openedAt: Date | null;
   createdAt: Date;
 }

@@ -131,15 +131,16 @@ export async function createMeeting(data: {
   assignedUserId?: string;
   organizationId?: string;
   googleCalendarEventId?: string;
+  zoomLink?: string;
 }): Promise<Meeting> {
   const id = uuidv4();
   const confirmationToken = uuidv4();
   const now = new Date().toISOString();
 
   await execute(
-    `INSERT INTO meetings (id, organization_id, client_name, client_email, meeting_title, scheduled_at, confirmation_token, assigned_user_id, google_calendar_event_id, created_at, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [id, data.organizationId || null, data.clientName, data.clientEmail, data.meetingTitle, data.scheduledAt.toISOString(), confirmationToken, data.assignedUserId || null, data.googleCalendarEventId || null, now, now]
+    `INSERT INTO meetings (id, organization_id, client_name, client_email, meeting_title, scheduled_at, confirmation_token, assigned_user_id, google_calendar_event_id, zoom_link, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [id, data.organizationId || null, data.clientName, data.clientEmail, data.meetingTitle, data.scheduledAt.toISOString(), confirmationToken, data.assignedUserId || null, data.googleCalendarEventId || null, data.zoomLink || null, now, now]
   );
 
   return (await getMeetingById(id))!;
@@ -221,6 +222,7 @@ function mapRowToMeeting(row: any): Meeting {
     confirmationToken: row.confirmation_token,
     assignedUserId: row.assigned_user_id || null,
     googleCalendarEventId: row.google_calendar_event_id || null,
+    zoomLink: row.zoom_link || null,
     createdAt: new Date(row.created_at),
     updatedAt: new Date(row.updated_at),
   };
@@ -528,12 +530,13 @@ export async function createEmailActivity(data: {
   errorMessage?: string;
 }): Promise<EmailActivity> {
   const id = uuidv4();
+  const trackingToken = uuidv4(); // Generate unique tracking token for email open tracking
   const now = new Date().toISOString();
 
   await execute(
-    `INSERT INTO email_activity (id, meeting_id, activity_type, recipient_email, subject, gmail_message_id, gmail_thread_id, status, error_message, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [id, data.meetingId, data.activityType, data.recipientEmail, data.subject, data.gmailMessageId || null, data.gmailThreadId || null, data.status, data.errorMessage || null, now]
+    `INSERT INTO email_activity (id, meeting_id, activity_type, recipient_email, subject, gmail_message_id, gmail_thread_id, status, error_message, tracking_token, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [id, data.meetingId, data.activityType, data.recipientEmail, data.subject, data.gmailMessageId || null, data.gmailThreadId || null, data.status, data.errorMessage || null, trackingToken, now]
   );
 
   return (await getEmailActivityById(id))!;
@@ -575,6 +578,35 @@ export async function getRecentEmailActivityWithMeetings(limit: number = 50): Pr
   }));
 }
 
+export async function getEmailActivityByTrackingToken(trackingToken: string): Promise<EmailActivity | null> {
+  const row = await queryOne('SELECT * FROM email_activity WHERE tracking_token = ?', [trackingToken]);
+  return row ? mapRowToEmailActivity(row) : null;
+}
+
+export async function markEmailOpened(trackingToken: string): Promise<EmailActivity | null> {
+  const now = new Date().toISOString();
+  // Only update if not already opened (first open time)
+  await execute(
+    `UPDATE email_activity SET opened_at = ? WHERE tracking_token = ? AND opened_at IS NULL`,
+    [now, trackingToken]
+  );
+  return getEmailActivityByTrackingToken(trackingToken);
+}
+
+export async function updateEmailActivityGmailIds(activityId: string, messageId: string, threadId: string): Promise<void> {
+  await execute(
+    `UPDATE email_activity SET gmail_message_id = ?, gmail_thread_id = ? WHERE id = ?`,
+    [messageId, threadId, activityId]
+  );
+}
+
+export async function markEmailActivityFailed(activityId: string, errorMessage: string): Promise<void> {
+  await execute(
+    `UPDATE email_activity SET status = 'failed', error_message = ? WHERE id = ?`,
+    [errorMessage, activityId]
+  );
+}
+
 function mapRowToEmailActivity(row: any): EmailActivity {
   return {
     id: row.id,
@@ -586,6 +618,8 @@ function mapRowToEmailActivity(row: any): EmailActivity {
     gmailThreadId: row.gmail_thread_id || null,
     status: row.status as EmailActivityStatus,
     errorMessage: row.error_message || null,
+    trackingToken: row.tracking_token || null,
+    openedAt: row.opened_at ? new Date(row.opened_at) : null,
     createdAt: new Date(row.created_at),
   };
 }

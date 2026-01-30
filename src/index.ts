@@ -8,6 +8,7 @@ import webhookRouter from './routes/webhook';
 import usersRouter from './routes/users';
 import templatesRouter from './routes/templates';
 import authRouter from './routes/auth';
+import trackingRouter from './routes/tracking';
 import { isAuthEnabled } from './config/supabase';
 import { createReminderWorker } from './jobs/queue';
 import { closeRedisConnection } from './config/redis';
@@ -54,6 +55,7 @@ async function main() {
   app.use('/api', webhookRouter);
   app.use('/api', usersRouter);
   app.use('/api', templatesRouter);
+  app.use('/api', trackingRouter); // Email open tracking (no auth required)
 
   // Start server
   const server = app.listen(PORT, () => {
