@@ -442,12 +442,19 @@ export async function sendReminderEmail(
   // Add Zoom link for 1 hour and 30 minute reminders only
   if ((reminderType === '1_hour' || reminderType === '30_minutes') && meeting.zoomLink) {
     const zoomHtml = `
-      <div style="background: #2D8CFF; color: white; padding: 15px 20px; border-radius: 8px; margin: 20px 0; text-align: center;">
-        <p style="margin: 0 0 10px 0; font-weight: bold;">Join Zoom Meeting</p>
-        <a href="${meeting.zoomLink}" style="color: white; text-decoration: underline; word-break: break-all;">${meeting.zoomLink}</a>
-      </div>`;
-    // Insert Zoom link before the signature
-    htmlBody = htmlBody.replace('</div>\n</body>', `${zoomHtml}</div>\n</body>`);
+    <div style="background: #2D8CFF; color: white; padding: 15px 20px; border-radius: 8px; margin: 20px 0; text-align: center;">
+      <p style="margin: 0 0 10px 0; font-weight: bold;">Join Zoom Meeting</p>
+      <a href="${meeting.zoomLink}" style="color: white; text-decoration: underline; word-break: break-all;">${meeting.zoomLink}</a>
+    </div>
+
+    `;
+    // Insert Zoom link before "Best regards" or before closing body tag
+    if (htmlBody.includes('Best regards')) {
+      htmlBody = htmlBody.replace(/<p[^>]*>[\s]*Best regards/i, `${zoomHtml}<p style="color: #666; font-size: 14px; margin-top: 30px;">Best regards`);
+    } else {
+      // Fallback: insert before </body>
+      htmlBody = htmlBody.replace('</body>', `${zoomHtml}</body>`);
+    }
     textBody = textBody + `\n\nJoin Zoom Meeting: ${meeting.zoomLink}`;
   }
 
